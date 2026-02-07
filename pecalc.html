@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Estate Property Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f1b2d 0%, #1a2b3c 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(0, 30, 60, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(64, 156, 255, 0.2);
+        }
+
+        h1 {
+            color: #4da6ff;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            color: #8ab4f8;
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        .calculator {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 992px) {
+            .calculator {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            background: rgba(20, 40, 60, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(64, 156, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+        }
+
+        .section-title {
+            color: #66b3ff;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(102, 179, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            font-size: 1.4rem;
+        }
+
+        .checkbox-group {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(10, 25, 45, 0.5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .checkbox-group:hover {
+            background: rgba(15, 35, 60, 0.7);
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+            accent-color: #4da6ff;
+        }
+
+        .checkbox-label {
+            font-size: 1.1rem;
+            flex-grow: 1;
+            cursor: pointer;
+        }
+
+        .value {
+            font-style: italic;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 4px 12px;
+            border-radius: 6px;
+            min-width: 130px;
+            text-align: right;
+        }
+
+        .value-red {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .value-green {
+            color: #6bff87;
+            background: rgba(107, 255, 135, 0.1);
+        }
+
+        .material-input {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(10, 25, 45, 0.5);
+            border-radius: 10px;
+        }
+
+        .material-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #8ab4f8;
+            font-size: 1.1rem;
+        }
+
+        .material-input-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="number"] {
+            flex-grow: 1;
+            padding: 12px 15px;
+            background: rgba(0, 15, 30, 0.7);
+            border: 1px solid rgba(64, 156, 255, 0.3);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1rem;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4da6ff;
+            box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.2);
+        }
+
+        .material-total {
+            font-style: italic;
+            font-weight: 600;
+            font-size: 1.1rem;
+            min-width: 130px;
+            text-align: right;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: rgba(0, 20, 40, 0.7);
+        }
+
+        .upgrade-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .upgrade-table th {
+            background: rgba(0, 30, 60, 0.8);
+            color: #66b3ff;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .upgrade-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(64, 156, 255, 0.1);
+        }
+
+        .upgrade-table tr:hover {
+            background: rgba(30, 60, 90, 0.3);
+        }
+
+        .upgrade-checkbox {
+            text-align: center;
+        }
+
+        .select-all {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(20, 50, 90, 0.5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .select-all label {
+            cursor: pointer;
+            font-weight: 600;
+            color: #8ab4f8;
+        }
+
+        .total-section {
+            grid-column: 1 / -1;
+            background: rgba(0, 40, 80, 0.8);
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(77, 166, 255, 0.3);
+            margin-top: 20px;
+        }
+
+        .total-title {
+            color: #66b3ff;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        #total-price {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #6bff87;
+            text-shadow: 0 2px 10px rgba(107, 255, 135, 0.3);
+            background: rgba(0, 20, 0, 0.3);
+            padding: 15px 30px;
+            border-radius: 12px;
+            display: inline-block;
+            min-width: 300px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #8ab4f8;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(64, 156, 255, 0.2);
+        }
+
+        .instructions {
+            background: rgba(0, 30, 60, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-left: 4px solid #4da6ff;
+        }
+
+        .instructions p {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .material-quantity {
+            color: #4da6ff;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calculator"></i> Private Estate Property Calculator</h1>
+            <p class="subtitle">Calculate the total cost of your property with upgrades and materials</p>
+        </header>
+
+        <div class="instructions">
+            <p><i class="fas fa-info-circle"></i> Instructions: Check the boxes for plot and build costs, enter market prices for materials, and select property upgrades. The total will update automatically.</p>
+        </div>
+
+        <div class="calculator">
+            <!-- Plot Section -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-map-marked-alt"></i> Plot</h2>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="plot-owned">
+                    <label for="plot-owned" class="checkbox-label">Plot Owned?</label>
+                    <span id="plot-value" class="value value-red">£50,000,000</span>
+                </div>
+            </div>
+
+            <!-- Build Cost Section -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-hard-hat"></i> Build Cost</h2>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="build-start">
+                    <label for="build-start" class="checkbox-label">Build Start Cost</label>
+                    <span id="build-value" class="value value-red">£125,000,000</span>
+                </div>
+            </div>
+
+            <!-- Materials Section -->
+            <div class="section" style="grid-column: 1 / -1;">
+                <h2 class="section-title"><i class="fas fa-boxes"></i> Materials</h2>
+                
+                <div class="material-input">
+                    <label class="material-label">Nails (<span class="material-quantity">2000</span> needed)</label>
+                    <div class="material-input-group">
+                        <input type="number" id="nails-price" min="0" step="1" placeholder="Enter market value per unit">
+                        <span class="material-total" id="nails-total">£0</span>
+                    </div>
+                </div>
+                
+                <div class="material-input">
+                    <label class="material-label">Bricks (<span class="material-quantity">1200</span> needed)</label>
+                    <div class="material-input-group">
+                        <input type="number" id="bricks-price" min="0" step="1" placeholder="Enter market value per unit">
+                        <span class="material-total" id="bricks-total">£0</span>
+                    </div>
+                </div>
+                
+                <div class="material-input">
+                    <label class="material-label">Concrete (<span class="material-quantity">750</span> needed)</label>
+                    <div class="material-input-group">
+                        <input type="number" id="concrete-price" min="0" step="1" placeholder="Enter market value per unit">
+                        <span class="material-total" id="concrete-total">£0</span>
+                    </div>
+                </div>
+                
+                <div class="material-input">
+                    <label class="material-label">Steel (<span class="material-quantity">300</span> needed)</label>
+                    <div class="material-input-group">
+                        <input type="number" id="steel-price" min="0" step="1" placeholder="Enter market value per unit">
+                        <span class="material-total" id="steel-total">£0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Property Upgrades Section -->
+            <div class="section" style="grid-column: 1 / -1;">
+                <h2 class="section-title"><i class="fas fa-home"></i> Property Upgrades</h2>
+                <p style="margin-bottom: 20px; color: #8ab4f8; font-style: italic;">Select the upgrades you want to add to your property. Each level must be purchased sequentially.</p>
+                
+                <!-- Safe Upgrades -->
+                <div class="upgrade-category">
+                    <h3 style="color: #66b3ff; margin-bottom: 10px; font-size: 1.3rem;">Safe</h3>
+                    <table class="upgrade-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Level</th>
+                                <th>Cost</th>
+                                <th>Select</th>
+                            </tr>
+                        </thead>
+                        <tbody id="safe-upgrades">
+                            <!-- Safe rows will be added by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div class="select-all">
+                        <input type="checkbox" id="safe-select-all">
+                        <label for="safe-select-all">Select All Safe Upgrades</label>
+                    </div>
+                </div>
+
+                <!-- Home Gym Upgrades -->
+                <div class="upgrade-category" style="margin-top: 30px;">
+                    <h3 style="color: #66b3ff; margin-bottom: 10px; font-size: 1.3rem;">Home Gym</h3>
+                    <table class="upgrade-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Level</th>
+                                <th>Cost</th>
+                                <th>Select</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gym-upgrades">
+                            <!-- Gym rows will be added by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div class="select-all">
+                        <input type="checkbox" id="gym-select-all">
+                        <label for="gym-select-all">Select All Home Gym Upgrades</label>
+                    </div>
+                </div>
+
+                <!-- Home Study Upgrades -->
+                <div class="upgrade-category" style="margin-top: 30px;">
+                    <h3 style="color: #66b3ff; margin-bottom: 10px; font-size: 1.3rem;">Home Study</h3>
+                    <table class="upgrade-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Level</th>
+                                <th>Cost</th>
+                                <th>Select</th>
+                            </tr>
+                        </thead>
+                        <tbody id="study-upgrades">
+                            <!-- Study rows will be added by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div class="select-all">
+                        <input type="checkbox" id="study-select-all">
+                        <label for="study-select-all">Select All Home Study Upgrades</label>
+                    </div>
+                </div>
+
+                <!-- Museum Upgrades -->
+                <div class="upgrade-category" style="margin-top: 30px;">
+                    <h3 style="color: #66b3ff; margin-bottom: 10px; font-size: 1.3rem;">Museum</h3>
+                    <table class="upgrade-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Level</th>
+                                <th>Cost</th>
+                                <th>Select</th>
+                            </tr>
+                        </thead>
+                        <tbody id="museum-upgrades">
+                            <!-- Museum rows will be added by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div class="select-all">
+                        <input type="checkbox" id="museum-select-all">
+                        <label for="museum-select-all">Select All Museum Upgrades</label>
+                    </div>
+                </div>
+
+                <!-- Library Upgrades -->
+                <div class="upgrade-category" style="margin-top: 30px;">
+                    <h3 style="color: #66b3ff; margin-bottom: 10px; font-size: 1.3rem;">Library</h3>
+                    <table class="upgrade-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Level</th>
+                                <th>Cost</th>
+                                <th>Select</th>
+                            </tr>
+                        </thead>
+                        <tbody id="library-upgrades">
+                            <!-- Library rows will be added by JavaScript -->
+                        </tbody>
+                    </table>
+                    <div class="select-all">
+                        <input type="checkbox" id="library-select-all">
+                        <label for="library-select-all">Select All Library Upgrades</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Section -->
+            <div class="total-section">
+                <h2 class="total-title">Total Property Price</h2>
+                <div id="total-price">£0</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Private Estate Property Calculator | Made for CartelEmpire By DAN</p>
+        
+        </div>
+    </div>
+
+    <script>
+        // Upgrade data
+        const upgrades = {
+            safe: [
+                { name: "Small Safe", level: 1, cost: 500000 },
+                { name: "Medium Safe", level: 2, cost: 2500000 },
+                { name: "Large Safe", level: 3, cost: 7500000 },
+                { name: "Small Vault", level: 4, cost: 15000000 },
+                { name: "Medium Vault", level: 5, cost: 30000000 },
+                { name: "Large Vault", level: 6, cost: 150000000 },
+                { name: "Massive Vault", level: 7, cost: 350000000 }
+            ],
+            gym: [
+                { name: "Barbell Set", level: 1, cost: 10000 },
+                { name: "Heavy Weights Set", level: 2, cost: 50000 },
+                { name: "Gym Machine Set", level: 3, cost: 1000000 },
+                { name: "Basic Gym Room", level: 4, cost: 3000000 },
+                { name: "Superior Gym Room", level: 5, cost: 15000000 },
+                { name: "Professional Gym Room", level: 6, cost: 50000000 }
+            ],
+            study: [
+                { name: "Basic Study Books", level: 1, cost: 25000 },
+                { name: "Advanced Study Books", level: 2, cost: 250000 },
+                { name: "Home Computer", level: 3, cost: 1500000 },
+                { name: "Basic Home Study", level: 4, cost: 5000000 },
+                { name: "Superior Home Study", level: 5, cost: 12500000 },
+                { name: "Professional Home Study", level: 6, cost: 25000000 }
+            ],
+            museum: [
+                { name: "Small Artifact Display", level: 1, cost: 1000000 },
+                { name: "Large Artifact Display", level: 2, cost: 10000000 },
+                { name: "Basic Museum Room", level: 3, cost: 25000000 },
+                { name: "Superior Museum Room", level: 4, cost: 50000000 }
+            ],
+            library: [
+                { name: "Small Book Collection", level: 1, cost: 10000 },
+                { name: "Medium Book Collection", level: 2, cost: 250000 },
+                { name: "Large Book Collection", level: 3, cost: 1250000 },
+                { name: "Basic Library Room", level: 4, cost: 7500000 },
+                { name: "Superior Library Room", level: 5, cost: 12500000 },
+                { name: "Professional Library Room", level: 6, cost: 30000000 }
+            ]
+        };
+
+        // Material data
+        const materials = {
+            nails: { quantity: 2000, elementId: "nails-price", totalId: "nails-total" },
+            bricks: { quantity: 1200, elementId: "bricks-price", totalId: "bricks-total" },
+            concrete: { quantity: 750, elementId: "concrete-price", totalId: "concrete-total" },
+            steel: { quantity: 300, elementId: "steel-price", totalId: "steel-total" }
+        };
+
+        // DOM elements
+        let plotCheckbox, plotValue, buildCheckbox, buildValue;
+        let materialInputs = {};
+        let upgradeCheckboxes = {};
+        let selectAllCheckboxes = {};
+        let totalPriceElement;
+
+        // Initialize the calculator
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get DOM elements
+            plotCheckbox = document.getElementById('plot-owned');
+            plotValue = document.getElementById('plot-value');
+            buildCheckbox = document.getElementById('build-start');
+            buildValue = document.getElementById('build-value');
+            totalPriceElement = document.getElementById('total-price');
+
+            // Initialize materials
+            for (const [material, data] of Object.entries(materials)) {
+                const inputElement = document.getElementById(data.elementId);
+                const totalElement = document.getElementById(data.totalId);
+                
+                materialInputs[material] = {
+                    input: inputElement,
+                    total: totalElement,
+                    quantity: data.quantity
+                };
+                
+                // Add event listener for material price input
+                inputElement.addEventListener('input', calculateTotal);
+            }
+
+            // Initialize upgrades
+            for (const [category, items] of Object.entries(upgrades)) {
+                const tableBody = document.getElementById(`${category}-upgrades`);
+                upgradeCheckboxes[category] = [];
+                
+                // Add rows to the table
+                items.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td>${item.level}</td>
+                        <td>£${formatNumber(item.cost)}</td>
+                        <td class="upgrade-checkbox">
+                            <input type="checkbox" class="upgrade-checkbox-${category}" value="${item.cost}">
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                    
+                    // Add checkbox to our tracking array
+                    const checkbox = row.querySelector(`.upgrade-checkbox-${category}`);
+                    upgradeCheckboxes[category].push(checkbox);
+                    
+                    // Add event listener
+                    checkbox.addEventListener('change', function() {
+                        updateValueColor(this, item.cost);
+                        calculateTotal();
+                        updateSelectAll(category);
+                    });
+                });
+                
+                // Initialize select all checkbox
+                const selectAllCheckbox = document.getElementById(`${category}-select-all`);
+                selectAllCheckboxes[category] = selectAllCheckbox;
+                
+                selectAllCheckbox.addEventListener('change', function() {
+                    const isChecked = this.checked;
+                    upgradeCheckboxes[category].forEach(checkbox => {
+                        checkbox.checked = isChecked;
+                        const cost = parseInt(checkbox.value);
+                        updateValueColor(checkbox, cost);
+                    });
+                    calculateTotal();
+                });
+            }
+
+            // Add event listeners for plot and build checkboxes
+            plotCheckbox.addEventListener('change', function() {
+                updateValueColor(this, 50000000, plotValue);
+                calculateTotal();
+            });
+            
+            buildCheckbox.addEventListener('change', function() {
+                updateValueColor(this, 125000000, buildValue);
+                calculateTotal();
+            });
+
+            // Calculate initial total
+            calculateTotal();
+        });
+
+        // Update the color of value based on checkbox state
+        function updateValueColor(checkbox, cost, valueElement = null) {
+            if (valueElement) {
+                if (checkbox.checked) {
+                    valueElement.textContent = `£${formatNumber(cost)}`;
+                    valueElement.className = 'value value-green';
+                } else {
+                    valueElement.textContent = `£${formatNumber(cost)}`;
+                    valueElement.className = 'value value-red';
+                }
+            }
+        }
+
+        // Format number with commas
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Update select all checkbox based on individual checkboxes
+        function updateSelectAll(category) {
+            const checkboxes = upgradeCheckboxes[category];
+            const selectAll = selectAllCheckboxes[category];
+            
+            const allChecked = checkboxes.every(checkbox => checkbox.checked);
+            const someChecked = checkboxes.some(checkbox => checkbox.checked);
+            
+            selectAll.checked = allChecked;
+            selectAll.indeterminate = someChecked && !allChecked;
+        }
+
+        // Calculate total price
+        function calculateTotal() {
+            let total = 0;
+            
+            // Add plot cost if selected
+            if (plotCheckbox.checked) {
+                total += 50000000;
+            }
+            
+            // Add build cost if selected
+            if (buildCheckbox.checked) {
+                total += 125000000;
+            }
+            
+            // Add material costs
+            for (const [material, data] of Object.entries(materialInputs)) {
+                const price = parseFloat(data.input.value) || 0;
+                const materialTotal = price * data.quantity;
+                total += materialTotal;
+                
+                // Update material total display
+                data.total.textContent = `£${formatNumber(materialTotal)}`;
+            }
+            
+            // Add upgrade costs
+            for (const [category, checkboxes] of Object.entries(upgradeCheckboxes)) {
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        total += parseInt(checkbox.value);
+                    }
+                });
+            }
+            
+            // Update total price display
+            totalPriceElement.textContent = `£${formatNumber(total)}`;
+        }
+    </script>
+</body>
+</html>

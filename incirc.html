@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartel Empire Item API Data Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ccc;
+            margin: 0;
+            padding: 20px;
+            /* New dark-themed background */
+            background-image: url('https://cdn.wallpapersafari.com/88/30/AdRk8x.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: rgba(34, 34, 34, 0.9); /* Dark semi-transparent background */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        h1, h2 {
+            color: #ff6b6b; /* Red for a powerful contrast */
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        p {
+            color: #b0b0b0;
+        }
+        
+        label {
+            color: #fff;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            background-color: #222;
+            color: #fff;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex-grow: 1;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            background-color: #007bff;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-copy {
+            background-color: #28a745;
+        }
+        
+        .btn-copy:hover {
+            background-color: #1e7e34;
+        }
+
+        .btn-html-export {
+            background-color: #6c757d;
+        }
+
+        .btn-html-export:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            font-size: 18px;
+            border-radius: 50%;
+            background-color: #555;
+            color: #fff;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .btn-info:hover {
+            background-color: #333;
+        }
+
+        dialog {
+            border: none;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            max-width: 400px;
+            text-align: center;
+            background-color: #2c2c2c;
+            color: #eee;
+        }
+        
+        dialog::backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        dialog h3 {
+            margin-top: 0;
+            color: #ff6b6b;
+        }
+        
+        .close-btn {
+            background-color: #555;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            color: #fff;
+        }
+        .close-btn:hover {
+            background-color: #777;
+        }
+
+        #output {
+            background-color: #2c2c2c;
+            color: #eee;
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+        }
+
+        .no-data {
+            color: #888;
+            font-style: italic;
+        }
+
+        .diff-higher {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .diff-lower {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 10px;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+        footer a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <button class="btn-info" onclick="showInfoPopup()">i</button>
+        <h1>Cartel Empire Item API Data Tool</h1>
+        <p style="text-align: center; color: #b0b0b0;">
+            Paste your API data into the text areas below to process it.
+        </p>
+        <hr>
+        <h2>Single Dataset Mode</h2>
+        <p>Paste a single set of API data to view item names and their circulation counts.</p>
+        <textarea id="dataInput1" placeholder="Paste API data here..."></textarea>
+        <div class="button-group">
+            <button class="btn" onclick="processData(1)">Process Data</button>
+            <button class="btn btn-copy" onclick="copyOutput()">Copy Output (Plain Text)</button>
+        </div>
+        
+        <hr>
+
+        <h2>Comparison Mode</h2>
+        <p>Paste two different sets of API data to see the difference in circulation.</p>
+        <label for="dataInput2">Data Set #1</label>
+        <textarea id="dataInput2" placeholder="Paste the first (older) API data set here..."></textarea>
+        <label for="dataInput3">Data Set #2</label>
+        <textarea id="dataInput3" placeholder="Paste the second (newer) API data set here..."></textarea>
+        <div class="button-group">
+            <button class="btn" onclick="processData(2)">Compare Data</button>
+            <button class="btn btn-copy" onclick="copyOutput()">Copy Output (Plain Text)</button>
+            <button class="btn btn-html-export" onclick="copyHtmlOutput()">Export to HTML</button>
+        </div>
+
+        <hr>
+
+        <h2>Output</h2>
+        <pre id="output" class="no-data">Results will appear here...</pre>
+    </div>
+
+    <footer>
+        Made by <a href="https://cartelempire.online/user/542" target="_blank">DAN [542]</a>
+    </footer>
+
+    <dialog id="infoPopup">
+        <h3>How to get API Data</h3>
+        <p>To get the Cartel Empire Item API Data, go to the following URL with your own unique API key:</p>
+        <p><b>https://cartelempire.online/api/items?type=advanced&key=[API KEY HERE]</b></p>
+        <button class="close-btn" onclick="closeInfoPopup()">Close</button>
+    </dialog>
+
+    <script>
+        let currentHtmlOutput = '';
+
+        function showInfoPopup() {
+            document.getElementById('infoPopup').showModal();
+        }
+
+        function closeInfoPopup() {
+            document.getElementById('infoPopup').close();
+        }
+
+        function processData(mode) {
+            const outputElement = document.getElementById('output');
+            outputElement.innerHTML = '';
+            currentHtmlOutput = '';
+
+            function sanitizeJsonString(str) {
+                let cleanedStr = str.replace(/\r?\n|\r/g, ' ');
+                cleanedStr = cleanedStr.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+                cleanedStr = cleanedStr.replace(/\\\\"/g, '\\"');
+                return cleanedStr;
+            }
+
+            if (mode === 1) {
+                const dataInput = document.getElementById('dataInput1').value;
+                if (!dataInput) {
+                    outputElement.innerHTML = '<span class="no-data">Please paste some data to process.</span>';
+                    return;
+                }
+                
+                try {
+                    const cleanedData = sanitizeJsonString(dataInput);
+                    const data = JSON.parse(cleanedData);
+                    if (!data.items || !Array.isArray(data.items)) {
+                        throw new Error('Invalid JSON format: expected a key "items" with an array.');
+                    }
+                    
+                    let result = '';
+                    data.items.forEach(item => {
+                        if (item.name && item.inCirculation !== undefined) {
+                            result += `${item.name}: In Circulation: ${item.inCirculation}\n`;
+                        }
+                    });
+                    
+                    outputElement.innerText = result.trim() || '<span class="no-data">No items found with name and circulation data.</span>';
+                } catch (e) {
+                    outputElement.innerHTML = `<span style="color: red;">Error: Invalid JSON data. Please check the format. Details: ${e.message}</span>`;
+                    console.error('Processing error:', e);
+                }
+            } else if (mode === 2) {
+                const dataInput1 = document.getElementById('dataInput2').value;
+                const dataInput2 = document.getElementById('dataInput3').value;
+                
+                if (!dataInput1 || !dataInput2) {
+                    outputElement.innerHTML = '<span class="no-data">Please paste data into both fields for comparison.</span>';
+                    return;
+                }
+
+                try {
+                    const cleanedData1 = sanitizeJsonString(dataInput1);
+                    const cleanedData2 = sanitizeJsonString(dataInput2);
+                    
+                    const oldData = JSON.parse(cleanedData1);
+                    const newData = JSON.parse(cleanedData2);
+                    
+                    if (!oldData.items || !newData.items) {
+                        throw new Error('Invalid JSON format: expected a key "items" with an array.');
+                    }
+
+                    const oldItemsMap = new Map(oldData.items.map(item => [item.name, item.inCirculation]));
+                    const newItemsMap = new Map(newData.items.map(item => [item.name, item.inCirculation]));
+                    
+                    let htmlResult = '';
+                    const allItemNames = new Set([...oldItemsMap.keys(), ...newItemsMap.keys()]);
+                    
+                    allItemNames.forEach(name => {
+                        const oldCirculation = oldItemsMap.get(name) || 0;
+                        const newCirculation = newItemsMap.get(name) || 0;
+                        const difference = newCirculation - oldCirculation;
+
+                        let differenceText;
+                        let colorStyle;
+                        if (difference > 0) {
+                            differenceText = `+${difference} (Higher)`;
+                            colorStyle = 'style="color: #28a745; font-weight: bold;"';
+                        } else if (difference < 0) {
+                            differenceText = `${difference} (Lower)`;
+                            colorStyle = 'style="color: #dc3545; font-weight: bold;"';
+                        } else {
+                            differenceText = '0 (No Change)';
+                            colorStyle = 'style="font-weight: bold;"';
+                        }
+                        
+                        htmlResult += `${name}: In Circulation: ${newCirculation}, Difference: <span ${colorStyle}>${differenceText}</span><br>\n`;
+                    });
+                    
+                    outputElement.innerHTML = htmlResult.trim() || '<span class="no-data">No items found with name and circulation data.</span>';
+                    currentHtmlOutput = htmlResult.trim();
+
+                } catch (e) {
+                    outputElement.innerHTML = `<span style="color: red;">Error: Invalid JSON data. Please check the format of both datasets. Details: ${e.message}</span>`;
+                    console.error('Comparison error:', e);
+                }
+            }
+        }
+
+        function copyOutput() {
+            const outputElement = document.getElementById('output');
+            const outputText = outputElement.innerText;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(outputText)
+                    .then(() => {
+                        alert('Output copied to clipboard as plain text!');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy text:', err);
+                    });
+            } else {
+                fallbackCopy(outputText);
+            }
+        }
+
+        function copyHtmlOutput() {
+            if (!currentHtmlOutput) {
+                alert('No formatted output to copy. Please run a comparison first.');
+                return;
+            }
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = currentHtmlOutput;
+            
+            if (navigator.clipboard) {
+                const clipboardItem = new ClipboardItem({
+                    "text/plain": new Blob([tempDiv.innerText], { type: "text/plain" }),
+                    "text/html": new Blob([tempDiv.outerHTML], { type: "text/html" })
+                });
+                navigator.clipboard.write([clipboardItem])
+                    .then(() => {
+                        alert('Formatted output copied to clipboard! You can now paste it into a forum.');
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy formatted text:', err);
+                        fallbackCopy(tempDiv.innerText);
+                    });
+            } else {
+                fallbackCopy(tempDiv.innerText);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = text;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            alert('Output copied to clipboard! (Plain text fallback)');
+        }
+    </script>
+</body>
+</html>
