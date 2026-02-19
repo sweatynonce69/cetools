@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smuggling Distribution Wizard</title>
+
+<style>
+:root{
+--bg:#0f172a;
+--card:#1e293b;
+--text:#f1f5f9;
+--accent:#3b82f6;
+--success:#22c55e;
+--danger:#ef4444;
+--muted:#94a3b8;
+}
+
+body.light{
+--bg:#f1f5f9;
+--card:#ffffff;
+--text:#0f172a;
+--muted:#475569;
+}
+
+*{box-sizing:border-box;font-family:system-ui,sans-serif}
+
+body{
+margin:0;
+background:var(--bg);
+color:var(--text);
+transition:.25s ease;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+padding:30px 20px 90px;
+}
+
+h1{text-align:center;margin-bottom:20px}
+
+.card{
+background:var(--card);
+padding:25px;
+border-radius:16px;
+box-shadow:0 10px 30px rgba(0,0,0,.3);
+margin-bottom:20px;
+animation:fade .25s ease;
+}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(10px)}
+to{opacity:1;transform:translateY(0)}
+}
+
+.hidden{display:none}
+
+input,select,button{
+padding:10px;
+border-radius:8px;
+border:none;
+width:100%;
+margin-bottom:10px;
+}
+
+button{cursor:pointer;font-weight:bold}
+
+.btn-primary{background:var(--accent);color:white}
+.btn-success{background:var(--success);color:white}
+.btn-danger{background:var(--danger);color:white}
+.btn-secondary{background:#475569;color:white}
+
+.flex{display:flex;gap:10px;flex-wrap:wrap}
+
+.player-row{
+display:grid;
+grid-template-columns:1fr 120px 40px;
+gap:10px;
+margin-bottom:10px;
+}
+
+.item-row{
+display:grid;
+grid-template-columns:1fr 80px 150px 80px;
+gap:10px;
+margin-bottom:10px;
+}
+
+.progress-bar{
+height:8px;
+background:#334155;
+border-radius:10px;
+overflow:hidden;
+margin-bottom:20px;
+}
+
+.progress-fill{
+height:100%;
+width:0%;
+background:var(--accent);
+transition:width .3s ease;
+}
+
+.summary-table{
+width:100%;
+border-collapse:collapse;
+table-layout:fixed;
+}
+
+.summary-table th,
+.summary-table td{
+padding:10px;
+border-bottom:1px solid #334155;
+}
+
+.summary-table th{text-align:left}
+
+.summary-table td:nth-child(2),
+.summary-table td:nth-child(3),
+.summary-table td:nth-child(4),
+.summary-table th:nth-child(2),
+.summary-table th:nth-child(3),
+.summary-table th:nth-child(4){
+text-align:right;
+}
+
+.theme-toggle{
+position:fixed;
+bottom:20px;
+left:20px;
+width:auto;
+padding:10px 14px;
+}
+
+.nav-buttons{
+display:flex;
+justify-content:space-between;
+margin-top:15px;
+gap:10px;
+}
+
+@media(max-width:700px){
+.player-row{grid-template-columns:1fr 90px 40px}
+.item-row{grid-template-columns:1fr 60px 110px 60px}
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle btn-secondary" onclick="toggleTheme()">Toggle Theme</button>
+
+<div class="container">
+<h1>Smuggling Distribution Wizard</h1>
+
+<div class="progress-bar">
+<div class="progress-fill" id="progressFill"></div>
+</div>
+
+<div class="card" id="step1">
+<h2>Step 1 — Participants</h2>
+<input type="number" id="numPlayers" placeholder="Number of Players">
+<div class="nav-buttons">
+<div></div>
+<button class="btn-primary" onclick="createPlayers()">Next</button>
+</div>
+</div>
+
+<div class="card hidden" id="step2">
+<h2>Step 2 — Contribution Scores (Must Total 100%)</h2>
+<div id="playersContainer"></div>
+<button onclick="autoBalance()">Auto Balance Evenly</button>
+<div id="contributionError" style="color:var(--danger)"></div>
+<div class="nav-buttons">
+<button class="btn-secondary" onclick="setStep(1)">Back</button>
+<button class="btn-primary" onclick="validateContributions()">Next</button>
+</div>
+</div>
+
+<div class="card hidden" id="step3">
+<h2>Step 3 — Smuggled Items</h2>
+
+<div class="flex">
+<select id="categorySelect" onchange="handleCategoryChange()"></select>
+<select id="itemSelect"></select>
+<input type="number" id="quantity" placeholder="Qty">
+<input type="text" id="value" placeholder="Value Per Unit (£)">
+<button class="btn-success" onclick="addItem()">Add</button>
+</div>
+
+<div id="itemsContainer"></div>
+
+<div class="nav-buttons">
+<button class="btn-secondary" onclick="setStep(2)">Back</button>
+<button class="btn-primary" onclick="calculate()">Next</button>
+</div>
+</div>
+
+<div class="card hidden" id="step4">
+<h2>Results</h2>
+
+<div id="results"></div>
+
+<button class="btn-secondary" onclick="toggleAdvanced()">Advanced Breakdown</button>
+
+<div id="advancedSection" class="hidden" style="margin-top:20px;">
+<div id="advancedResults"></div>
+
+<div class="nav-buttons">
+<div></div>
+<div>
+<button onclick="exportAdvancedCSV()" class="btn-success">Export Advanced CSV</button>
+<button onclick="copyAdvancedDiscord()" class="btn-primary">Copy Advanced for Discord</button>
+</div>
+</div>
+</div>
+
+<div class="nav-buttons">
+<button class="btn-secondary" onclick="setStep(3)">Back</button>
+<div>
+<button onclick="exportCSV()" class="btn-success">Export CSV</button>
+<button onclick="copyDiscord()" class="btn-primary">Copy for Discord</button>
+</div>
+</div>
+</div>
+
+</div>
+
+<script>
+let players=[];
+let items=[];
+
+const categories={
+"Alcohol":["Blancoda Tequila","Repose Tequila","Anejo Tequila","Raicilla"],
+"Enhancement":["Street-Quality Enhancement","Syndicate-Issued Enhancement","Blacksite Prototype Enhancement"],
+"Smuggling Enhancement":["Weapons & Armor Specialist Contact","Alcohol Specialist Contact","Tech Specialist Contact","Leadership Specialist Contact"],
+"Weapon":["G36","Steyr AUG","SIG SG 550","FN SCAR-H","Desert Eagle","Bazooka","MG34","L86 LSW","MG5"],
+"Armour":["Tactical Plate Armour","Full-Body Armour","Blast Suit","New-Age Combat Fatigues"],
+"Money":["Money"]
+};
+
+const categorySelect=document.getElementById("categorySelect");
+Object.keys(categories).forEach(cat=>{
+let opt=document.createElement("option");
+opt.value=cat;
+opt.textContent=cat;
+categorySelect.appendChild(opt);
+});
+
+function toggleTheme(){document.body.classList.toggle("light")}
+
+function setStep(step){
+document.querySelectorAll(".card").forEach(c=>c.classList.add("hidden"));
+document.getElementById("step"+step).classList.remove("hidden");
+document.getElementById("progressFill").style.width=((step-1)/3)*100+"%";
+}
+
+function createPlayers(){
+const num=parseInt(document.getElementById("numPlayers").value);
+if(!num||num<1)return alert("Enter valid number");
+const container=document.getElementById("playersContainer");
+container.innerHTML="";
+for(let i=0;i<num;i++){
+let div=document.createElement("div");
+div.className="player-row";
+div.innerHTML=`
+<input placeholder="Player Name">
+<input type="number" placeholder="%">
+<button onclick="this.parentElement.remove()" class="btn-danger">X</button>`;
+container.appendChild(div);
+}
+setStep(2);
+}
+
+function autoBalance(){
+const rows=document.querySelectorAll(".player-row");
+if(rows.length===0)return;
+const even=(100/rows.length).toFixed(2);
+rows.forEach(r=>r.children[1].value=even);
+}
+
+function validateContributions(){
+players=[];
+let total=0;
+document.querySelectorAll(".player-row").forEach(r=>{
+let name=r.children[0].value.trim();
+let percent=parseFloat(r.children[1].value);
+if(name&&!isNaN(percent)){
+players.push({name,percent});
+total+=percent;
+}
+});
+if(Math.round(total)!==100){
+document.getElementById("contributionError").innerText="Total must equal 100%. Current: "+total+"%";
+return;
+}
+setStep(3);
+}
+
+function handleCategoryChange(){
+const cat=categorySelect.value;
+const itemSelect=document.getElementById("itemSelect");
+const qty=document.getElementById("quantity");
+itemSelect.innerHTML="";
+categories[cat].forEach(item=>{
+let opt=document.createElement("option");
+opt.value=item;
+opt.textContent=item;
+itemSelect.appendChild(opt);
+});
+if(cat==="Money"){
+itemSelect.style.display="none";
+qty.style.display="none";
+document.getElementById("value").placeholder="Total Cash (£)";
+}else{
+itemSelect.style.display="block";
+qty.style.display="block";
+document.getElementById("value").placeholder="Value Per Unit (£)";
+}
+}
+handleCategoryChange();
+
+// Improved helper to handle K, M, B suffixes and formatting
+function parseValueString(str) {
+    if (!str) return 0;
+    // Clean string: remove £, commas, and whitespace
+    let cleaned = str.toString().toLowerCase().replace(/[£\s,]/g, '');
+    
+    // Regex to separate the number from the suffix (k, m, or b)
+    const match = cleaned.match(/^(\d+\.?\d*)([kmb]?)$/);
+    if (!match) return 0;
+
+    let number = parseFloat(match[1]);
+    const suffix = match[2];
+
+    if (suffix === 'k') number *= 1000;
+    if (suffix === 'm') number *= 1000000;
+    if (suffix === 'b') number *= 1000000000;
+
+    return isNaN(number) ? 0 : number;
+}
+
+// Updated event listener: now triggers on 'blur' (when clicking away)
+// This converts "8.5m" into "£8,500,000" instantly in the text box.
+document.getElementById("value").addEventListener("blur", function() {
+    let val = parseValueString(this.value);
+    if (val > 0) {
+        this.value = new Intl.NumberFormat('en-GB', {
+            style: 'currency',
+            currency: 'GBP',
+            maximumFractionDigits: 0
+        }).format(val);
+    }
+});
+
+function addItem(){
+const cat=categorySelect.value;
+let val = parseValueString(document.getElementById("value").value);
+
+if(!val)return alert("Enter value");
+if(cat==="Money"){
+items.push({name:"Cash",qty:1,val});
+}else{
+const name=document.getElementById("itemSelect").value;
+const qty=parseInt(document.getElementById("quantity").value);
+if(!qty)return alert("Enter quantity");
+items.push({name,qty,val});
+}
+renderItems();
+
+document.getElementById("quantity").value = "";
+document.getElementById("value").value = "";
+}
+
+function renderItems(){
+const container=document.getElementById("itemsContainer");
+container.innerHTML="";
+items.forEach((item,i)=>{
+let div=document.createElement("div");
+div.className="item-row";
+div.innerHTML=`
+<div>${item.name}</div>
+<div>${item.qty}</div>
+<div>£${item.val.toLocaleString()}</div>
+<button onclick="removeItem(${i})" class="btn-danger">X</button>`;
+container.appendChild(div);
+});
+}
+
+function removeItem(i){
+items.splice(i,1);
+renderItems();
+}
+
+function calculate(){
+let total=items.reduce((sum,i)=>sum+(i.qty*i.val),0);
+let html=`<h3>Total Operation Value: £${total.toLocaleString()}</h3>`;
+html+=`<table class="summary-table"><thead><tr><th>Player</th><th>%</th><th>Payout</th></tr></thead><tbody>`;
+players.forEach(p=>{
+let payout=Math.ceil(total*(p.percent/100));
+p.payout=payout;
+html+=`<tr><td>${p.name}</td><td>${p.percent}%</td><td>£${payout.toLocaleString()}</td></tr>`;
+});
+html+="</tbody></table>";
+document.getElementById("results").innerHTML=html;
+setStep(4);
+}
+
+function toggleAdvanced(){
+const section=document.getElementById("advancedSection");
+section.classList.toggle("hidden");
+if(!section.classList.contains("hidden"))generateAdvancedBreakdown();
+}
+
+function generateAdvancedBreakdown(){
+let total=items.reduce((sum,i)=>sum+(i.qty*i.val),0);
+let html="<h3>Player Distribution</h3>";
+html+=`<table class="summary-table"><thead><tr><th>Player</th><th>%</th><th>Payout</th></tr></thead><tbody>`;
+players.forEach(p=>{
+html+=`<tr><td>${p.name}</td><td>${p.percent}%</td><td>£${p.payout.toLocaleString()}</td></tr>`;
+});
+html+="</tbody></table>";
+html+="<h3 style='margin-top:25px;'>Item Breakdown</h3>";
+html+=`<table class="summary-table"><thead><tr><th>Item</th><th>Qty</th><th>Per Unit</th><th>Subtotal</th></tr></thead><tbody>`;
+items.forEach(i=>{
+let subtotal=i.qty*i.val;
+html+=`<tr><td>${i.name}</td><td style="text-align:right">${i.qty}</td><td style="text-align:right">£${i.val.toLocaleString()}</td><td style="text-align:right">£${subtotal.toLocaleString()}</td></tr>`;
+});
+html+=`</tbody></table><h3 style="margin-top:20px;">Grand Total: £${total.toLocaleString()}</h3>`;
+document.getElementById("advancedResults").innerHTML=html;
+}
+
+function exportCSV(){
+let csv="Player,Contribution %,Payout\n";
+players.forEach(p=>{csv+=`${p.name},${p.percent},${p.payout}\n`});
+let blob=new Blob([csv],{type:"text/csv"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="distribution.csv";
+a.click();
+}
+
+function exportAdvancedCSV(){
+let total=items.reduce((sum,i)=>sum+(i.qty*i.val),0);
+let csv="PLAYER DISTRIBUTION\nPlayer,Contribution %,Payout\n";
+players.forEach(p=>{csv+=`${p.name},${p.percent},${p.payout}\n`});
+csv+="\nITEM BREAKDOWN\nItem,Qty,Per Unit,Subtotal\n";
+items.forEach(i=>{csv+=`${i.name},${i.qty},${i.val},${i.qty*i.val}\n`});
+csv+=`\nGrand Total,, ,${total}\n`;
+let blob=new Blob([csv],{type:"text/csv"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="advanced_distribution.csv";
+a.click();
+}
+
+function copyDiscord(){
+let text="Smuggling Distribution Results\n";
+players.forEach(p=>{text+=`${p.name} (${p.percent}%) → £${p.payout.toLocaleString()}\n`});
+navigator.clipboard.writeText("```"+text+"```");
+alert("Copied for Discord.");
+}
+
+function copyAdvancedDiscord(){
+let total=items.reduce((sum,i)=>sum+(i.qty*i.val),0);
+let text="SMUGGLING OPERATION BREAKDOWN\n\nPlayer Distribution:\n";
+players.forEach(p=>{text+=`${p.name} (${p.percent}%) → £${p.payout.toLocaleString()}\n`});
+text+="\nItem Breakdown:\n";
+items.forEach(i=>{text+=`${i.name} x${i.qty} @ £${i.val.toLocaleString()} = £${(i.qty*i.val).toLocaleString()}\n`});
+text+=`\nGrand Total: £${total.toLocaleString()}`;
+navigator.clipboard.writeText("```"+text+"```");
+alert("Advanced breakdown copied for Discord.");
+}
+</script>
+
+</body>
+</html>
