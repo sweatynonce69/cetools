@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reputation Payment Calculator</title>
     <style>
         :root {
@@ -534,22 +534,22 @@
         <!-- Username -->
         <div class="form-group">
             <label for="username">Username</label>
-            <input type="text" id="username" placeholder="e.g. just-tech" autocomplete="off">
+            <input type="text" id="username" placeholder="e.g. just-tech" autocomplete="off" />
         </div>
 
         <!-- Reputation -->
         <div class="form-group">
             <label for="reputation">Reputation Earned (to date)</label>
-            <input type="text" id="reputation" placeholder="e.g. 32127" autocomplete="off">
+            <input type="text" id="reputation" placeholder="e.g. 32127" autocomplete="off" />
         </div>
 
         <!-- Rate -->
         <div class="form-group">
             <label for="rateSelect">Rate per 100 Reputation</label>
             <select id="rateSelect">
-                <option value="1000000" selected>£1,000,000 per 100 Rep</option>
+                <option value="1000000">£1,000,000 per 100 Rep</option>
                 <option value="750000">£750,000 per 100 Rep</option>
-                <option value="500000">£500,000 per 100 Rep</option>
+                <option value="500000" selected>£500,000 per 100 Rep</option>
                 <option value="250000">£250,000 per 100 Rep</option>
                 <option value="100000">£100,000 per 100 Rep</option>
                 <option value="custom">⚙ Custom Rate...</option>
@@ -558,7 +558,7 @@
                 <label for="customRate">Enter custom rate (£ per 100 Rep)</label>
                 <div class="input-wrapper">
                     <span class="currency-symbol">£</span>
-                    <input type="text" id="customRate" class="has-currency" placeholder="e.g. 600000" autocomplete="off">
+                    <input type="text" id="customRate" class="has-currency" placeholder="e.g. 600000" autocomplete="off" />
                 </div>
             </div>
         </div>
@@ -568,7 +568,7 @@
             <label for="alreadyPaid">Already Paid (£) <span style="font-weight:400;text-transform:none;letter-spacing:0;">— total paid so far</span></label>
             <div class="input-wrapper">
                 <span class="currency-symbol">£</span>
-                <input type="text" id="alreadyPaid" class="has-currency" placeholder="e.g. 214000000 or 214M" autocomplete="off">
+                <input type="text" id="alreadyPaid" class="has-currency" placeholder="e.g. 214000000 or 214M" autocomplete="off" />
             </div>
             <span style="font-size:0.7rem;color:var(--text-secondary);margin-top:3px;display:inline-block;">Accepts: 214000000, 214,000,000, or 214M</span>
             <div class="error-message" id="alreadyPaidError">Please enter a valid number.</div>
@@ -576,10 +576,10 @@
 
         <!-- Round Up Checkbox -->
         <label class="checkbox-group" for="roundUp">
-            <input type="checkbox" id="roundUp">
+            <input type="checkbox" id="roundUp" />
             <span>
                 <span class="checkbox-label">Round up payment owed to nearest million</span>
-                <br><span class="checkbox-hint">Makes tracking easier — rounds the new payment upward</span>
+                <br /><span class="checkbox-hint">Makes tracking easier — rounds the new payment upward</span>
             </span>
         </label>
 
@@ -857,15 +857,6 @@
                     }, 2000);
                 });
             });
-
-            // Pre-fill with example for demo (optional — remove if not wanted)
-            // Uncomment the lines below to pre-fill the example from the prompt:
-            // usernameInput.value = 'just-tech';
-            // reputationInput.value = '32127';
-            // alreadyPaidInput.value = '214000000';
-            // rateSelect.value = '1000000';
-            // roundUpCheckbox.checked = true;
-            // calculate();
         })();
     </script>
 </body>
