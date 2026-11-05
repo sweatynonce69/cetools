@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smuggling Distribution Wizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="smugglingcalcv4_files/css2_f8Hj.css" rel="stylesheet">
+<style>
+:root, :root[data-theme="dark"] {
+  --bg: #0a0e16;
+  --glow-1: rgba(99, 102, 241, .16);
+  --glow-2: rgba(16, 185, 129, .10);
+  --surface: #111725;
+  --surface-2: #161e2f;
+  --surface-3: #1c2639;
+  --border: #222d43;
+  --border-strong: #2e3b56;
+  --text: #e7ecf5;
+  --muted: #8592aa;
+  --faint: #5c6880;
+  --input: #0c1220;
+  --accent: #6366f1;
+  --accent-hi: #818cf8;
+  --accent-soft: rgba(99, 102, 241, .16);
+  --success: #10b981;
+  --success-soft: rgba(16, 185, 129, .15);
+  --warn: #f59e0b;
+  --warn-soft: rgba(245, 158, 11, .14);
+  --danger: #f43f5e;
+  --danger-soft: rgba(244, 63, 94, .14);
+  --shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 24px 60px -24px rgba(0,0,0,.7);
+}
+:root[data-theme="light"] {
+  --bg: #f3f5fa;
+  --glow-1: rgba(99, 102, 241, .10);
+  --glow-2: rgba(16, 185, 129, .07);
+  --surface: #ffffff;
+  --surface-2: #f7f8fc;
+  --surface-3: #eef1f7;
+  --border: #e3e7f0;
+  --border-strong: #cfd6e4;
+  --text: #121a2b;
+  --muted: #5a6479;
+  --faint: #8a93a6;
+  --input: #ffffff;
+  --accent: #4f46e5;
+  --accent-hi: #4338ca;
+  --accent-soft: rgba(79, 70, 229, .10);
+  --success: #059669;
+  --success-soft: rgba(5, 150, 105, .10);
+  --warn: #d97706;
+  --warn-soft: rgba(217, 119, 6, .10);
+  --danger: #e11d48;
+  --danger-soft: rgba(225, 29, 72, .08);
+  --shadow: 0 1px 2px rgba(16,24,40,.04), 0 16px 40px -20px rgba(16,24,40,.18);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1100px 520px at 0% -10%, var(--glow-1), transparent 60%),
+    radial-gradient(900px 480px at 100% 0%, var(--glow-2), transparent 60%);
+  background-attachment: fixed;
+  transition: background-color .2s, color .2s;
+}
+.num, input, td, .stat b { font-variant-numeric: tabular-nums; }
+.hidden { display: none !important; }
+.muted { color: var(--muted); }
+
+.app { max-width: 1040px; margin: 0 auto; padding: 28px 20px 80px; }
+
+/* Header */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 26px; }
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.logo {
+  width: 44px; height: 44px; border-radius: 12px; flex: none;
+  display: grid; place-items: center; color: #fff;
+  background: linear-gradient(135deg, var(--accent), #10b981);
+  box-shadow: 0 8px 24px -8px var(--accent);
+}
+.brand h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+.brand p { margin: 0; color: var(--muted); font-size: 13px; }
+
+/* Stepper */
+.stepper { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0; margin: 0 0 18px; }
+.stepper li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--faint); font-weight: 600; font-size: 13px;
+  cursor: default; user-select: none; transition: .15s;
+}
+.stepper li .dot {
+  width: 24px; height: 24px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; font-size: 12px;
+  background: var(--surface-3); color: var(--muted);
+}
+.stepper li.reachable { cursor: pointer; color: var(--muted); }
+.stepper li.reachable:hover { border-color: var(--border-strong); }
+.stepper li.done .dot { background: var(--success-soft); color: var(--success); }
+.stepper li.active { color: var(--text); border-color: var(--accent); background: linear-gradient(var(--accent-soft), var(--accent-soft)), var(--surface); }
+.stepper li.active .dot { background: var(--accent); color: #fff; }
+
+/* Cards */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; box-shadow: var(--shadow);
+  padding: 24px; animation: rise .22s ease;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.card-head h2 { margin: 0 0 4px; font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+.card-head p { margin: 0; color: var(--muted); }
+kbd {
+  font-family: inherit; font-size: 12px; padding: 1px 6px; border-radius: 6px;
+  background: var(--surface-3); border: 1px solid var(--border); color: var(--text);
+}
+
+/* Controls */
+.field, .money-wrap input, select.field {
+  width: 100%; height: 40px; padding: 0 12px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: var(--input); color: var(--text);
+  font: inherit; outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.field:focus, .money-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.field::placeholder, .money-wrap input::placeholder { color: var(--faint); }
+input[type=number]::-webkit-inner-spin-button { opacity: .4; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 16px; border-radius: 10px;
+  border: 1px solid transparent; font: inherit; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: .15s; color: var(--text); background: none;
+}
+.btn.sm { height: 34px; padding: 0 12px; font-size: 13px; }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 6px 18px -8px var(--accent); }
+.btn-primary:hover { background: var(--accent-hi); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { filter: brightness(1.08); }
+.btn-ghost { background: var(--surface-2); border-color: var(--border); }
+.btn-ghost:hover { border-color: var(--border-strong); background: var(--surface-3); }
+.btn-text { color: var(--muted); padding: 0 8px; }
+.btn-text:hover { color: var(--danger); }
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 9px; flex: none;
+  display: inline-grid; place-items: center;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--muted);
+  cursor: pointer; transition: .15s; font-size: 16px; line-height: 1;
+}
+.icon-btn:hover { color: var(--text); border-color: var(--border-strong); }
+.icon-btn.danger:hover { color: var(--danger); background: var(--danger-soft); border-color: transparent; }
+.icon-btn.ok { color: var(--success); background: var(--success-soft); border-color: transparent; }
+
+.nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px;
+  border-radius: 999px; font-weight: 700; font-size: 13px; white-space: nowrap;
+  background: var(--surface-3); color: var(--muted);
+}
+.pill.ok { background: var(--success-soft); color: var(--success); }
+.pill.bad { background: var(--danger-soft); color: var(--danger); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+
+.alert {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 11px 14px; border-radius: 12px; margin-top: 14px;
+  background: var(--danger-soft); color: var(--danger); font-weight: 500;
+}
+.alert.warn { background: var(--warn-soft); color: var(--warn); }
+.alert:empty { display: none; }
+
+/* Step 1 */
+.drop {
+  border: 1.5px dashed var(--border-strong); border-radius: 16px;
+  padding: 36px 20px; text-align: center; cursor: pointer;
+  background: var(--surface-2); transition: .15s;
+}
+.drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop .ico {
+  width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 14px;
+  display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-hi);
+}
+.drop strong { font-size: 15px; }
+.drop .link { color: var(--accent-hi); font-weight: 600; }
+.drop small { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; }
+.divider { display: flex; align-items: center; gap: 12px; color: var(--faint); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin: 22px 0; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.manual { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; }
+.resume {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 14px 16px; border-radius: 14px; margin-bottom: 16px;
+  background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.resume b { display: block; }
+.resume span { color: var(--muted); font-size: 13px; }
+
+/* Step 2: players */
+.players-grid { display: grid; grid-template-columns: 28px minmax(0, 1fr) 130px minmax(90px, 200px) 34px; gap: 10px; align-items: center; }
+.tbl-head { color: var(--faint); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 0 0 8px; }
+.player-row { padding: 6px 0; }
+.player-row .rank { color: var(--faint); font-weight: 600; text-align: right; font-size: 13px; }
+.suffix { position: relative; }
+.suffix input { padding-right: 30px; text-align: right; }
+.suffix::after { content: "%"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
+.bar { height: 8px; border-radius: 99px; background: var(--surface-3); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-hi)); transition: width .2s; }
+.player-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+
+/* Step 3: items */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+.stat { padding: 14px 16px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); min-width: 0; }
+.stat span { display: block; color: var(--muted); font-size: 12px; font-weight: 500; margin-bottom: 2px; }
+.stat b { display: block; font-size: 18px; font-weight: 700; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stat.hl { background: linear-gradient(135deg, var(--accent-soft), transparent), var(--surface-2); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.stat.hl b { color: var(--accent-hi); }
+.stat .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+.items-tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.items-tools .search { flex: 1 1 220px; position: relative; }
+.items-tools .search input { padding-left: 36px; }
+.items-tools .search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--faint); }
+.check { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 500; cursor: pointer; user-select: none; }
+.check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+
+.group { border: 1px solid var(--border); border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+.group-head {
+  display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+  background: var(--surface-2); border-bottom: 1px solid var(--border);
+}
+.group-head h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.group-head .count { color: var(--faint); font-size: 12px; font-weight: 500; }
+.group-head .gt { margin-left: auto; font-weight: 700; font-size: 13px; color: var(--muted); }
+.cat-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent); flex: none; }
+.items-grid { display: grid; grid-template-columns: minmax(0, 1fr) 100px 170px 130px 34px; gap: 10px; align-items: center; }
+.group .tbl-head { padding: 9px 14px 0; }
+.item-row { padding: 7px 14px; border-top: 1px solid transparent; }
+.item-row + .item-row { border-top-color: var(--border); }
+.item-row:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+.item-name { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 500; }
+.item-name .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qbadge { flex: none; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; }
+.q-lo { background: var(--danger-soft); color: var(--danger); }
+.q-mid { background: var(--warn-soft); color: var(--warn); }
+.q-hi { background: var(--success-soft); color: var(--success); }
+.qty-in { height: 36px; text-align: right; }
+.money-wrap { position: relative; }
+.money-wrap > span { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
+.money-wrap input { height: 36px; padding-left: 24px; text-align: right; }
+.money-wrap input.invalid { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+.money-wrap input.has-pin { padding-right: 38px; }
+.pin {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; border-radius: 7px; border: 0; background: none; padding: 0;
+  display: grid; place-items: center; color: var(--faint); cursor: pointer; transition: .15s;
+}
+.pin:hover { color: var(--text); background: var(--surface-3); }
+.pin.on { color: var(--accent-hi); background: var(--accent-soft); }
+.pin.on svg { fill: currentColor; }
+.add-form .check { white-space: nowrap; }
+.item-row:not(.priced) .money-wrap input:not(:focus) { border-color: color-mix(in srgb, var(--warn) 55%, var(--border)); }
+.item-row .subtotal { text-align: right; font-weight: 600; }
+.item-row:not(.priced) .subtotal { color: var(--faint); font-weight: 500; }
+.empty { padding: 34px 16px; text-align: center; color: var(--muted); border: 1.5px dashed var(--border); border-radius: 14px; }
+
+details.add {
+  margin-top: 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-2);
+}
+details.add summary { cursor: pointer; padding: 12px 16px; font-weight: 600; color: var(--muted); list-style: none; }
+details.add summary::-webkit-details-marker { display: none; }
+details.add summary::before { content: "+"; display: inline-block; width: 18px; color: var(--accent-hi); font-weight: 700; }
+details.add[open] summary::before { content: "−"; }
+.add-form { display: grid; grid-template-columns: 170px minmax(0, 1fr) 110px 160px auto auto; gap: 10px; align-items: center; padding: 0 16px 16px; }
+
+/* Step 4: results */
+table.results { width: 100%; border-collapse: collapse; }
+table.results th {
+  text-align: left; color: var(--faint); font-size: 11.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em; padding: 0 10px 10px;
+  border-bottom: 1px solid var(--border);
+}
+table.results td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+table.results tr:last-child td { border-bottom: none; }
+table.results tr.paid td:not(:first-child) { opacity: .45; }
+table.results tr.paid .pname { text-decoration: line-through; }
+table.results .r { text-align: right; }
+.pname { font-weight: 600; }
+.share-cell { display: flex; align-items: center; gap: 10px; }
+.share-cell .bar { flex: 1; min-width: 50px; }
+.share-cell .pct { width: 48px; text-align: right; color: var(--muted); font-size: 13px; }
+.payout { font-weight: 700; font-size: 15px; white-space: nowrap; }
+.paybox { width: 18px; height: 18px; accent-color: var(--success); cursor: pointer; }
+.pay-progress { display: flex; align-items: center; gap: 12px; margin: 4px 0 14px; color: var(--muted); font-size: 13px; }
+.pay-progress .bar { flex: 1; }
+.pay-progress .bar > i { background: var(--success); }
+
+.export-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+details.breakdown { margin-top: 18px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+details.breakdown summary { cursor: pointer; padding: 13px 16px; font-weight: 600; background: var(--surface-2); list-style: none; display: flex; justify-content: space-between; }
+details.breakdown summary::-webkit-details-marker { display: none; }
+details.breakdown summary::after { content: "▾"; color: var(--faint); transition: transform .15s; }
+details.breakdown[open] summary::after { transform: rotate(180deg); }
+details.breakdown .inner { padding: 14px 16px; overflow-x: auto; }
+table.bd { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.bd th { text-align: left; color: var(--faint); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; padding: 6px 8px; }
+table.bd td { padding: 7px 8px; border-top: 1px solid var(--border); }
+table.bd .r { text-align: right; white-space: nowrap; }
+table.bd tfoot td { font-weight: 700; border-top: 2px solid var(--border-strong); }
+
+/* Toast */
+.toasts { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: grid; gap: 8px; z-index: 50; width: max-content; max-width: calc(100vw - 32px); }
+.toast {
+  padding: 11px 16px; border-radius: 12px; font-weight: 600;
+  background: var(--text); color: var(--bg); box-shadow: 0 12px 30px -10px rgba(0,0,0,.5);
+  animation: toastIn .2s ease;
+}
+.toast.warn { background: var(--warn); color: #1a1205; }
+.toast.err { background: var(--danger); color: #fff; }
+.toast.ok { background: var(--success); color: #fff; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px); } }
+
+/* Responsive */
+@media (max-width: 820px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .add-form { grid-template-columns: 1fr 1fr; }
+  .add-form .wide { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .app { padding: 18px 16px 70px; }
+  .card { padding: 18px 16px; border-radius: 16px; }
+  .stat { padding: 12px; }
+  .stat b { font-size: 15px; }
+  .stepper .lbl { display: none; }
+  .stepper li { justify-content: center; }
+  .players-grid { grid-template-columns: minmax(0, 1fr) 100px 34px; }
+  .players-grid .rank, .players-grid .bar, .players-grid .bar-h, .players-grid .rank-h { display: none; }
+  .items-grid { grid-template-columns: 76px minmax(0, 1fr) 34px; row-gap: 6px; }
+  .items-grid .item-name { grid-column: 1 / -1; grid-row: 1; padding-right: 118px; }
+  .item-row .subtotal { grid-column: 1 / -1; grid-row: 1; justify-self: end; font-size: 13px; }
+  .group .tbl-head { display: none; }
+  .card-head { flex-direction: column; }
+  table.results .share-cell .bar { display: none; }
+  table.results th.hide-sm, table.results td.hide-sm { display: none; }
+  .nav .btn { flex: 1; }
+  .export-row { justify-content: stretch; }
+  .export-row .btn { flex: 1 1 calc(50% - 8px); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"></path><path d="m3 8 9 5 9-5"></path><path d="M12 13v8"></path></svg>
+      </div>
+      <div>
+        <h1>Smuggling Distribution Wizard</h1>
+        <p>Split a smuggling run's rewards by contribution score</p>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></button>
+  </header>
+
+  <ol class="stepper" id="stepper">
+    <li data-step="1" class="active"><span class="dot">1</span><span class="lbl">Import</span></li>
+    <li data-step="2"><span class="dot">2</span><span class="lbl">Contributors</span></li>
+    <li data-step="3"><span class="dot">3</span><span class="lbl">Rewards &amp; prices</span></li>
+    <li data-step="4"><span class="dot">4</span><span class="lbl">Payouts</span></li>
+  </ol>
+
+  <!-- STEP 1 -->
+  <section class="card" id="step1">
+    <div class="card-head">
+      <div>
+        <h2>Import contributions</h2>
+        <p>Use the CSV exported from the smuggling page. Contributors, scores, cash and items all load in one go.</p>
+      </div>
+    </div>
+
+    <div class="resume hidden" id="resumeBox">
+      <div><b>Pick up where you left off</b><span id="resumeInfo"></span></div>
+      <div class="toolbar">
+        <button class="btn btn-text sm" id="discardBtn">Discard</button>
+        <button class="btn btn-primary sm" id="resumeBtn">Resume</button>
+      </div>
+    </div>
+
+    <div class="drop" id="drop" role="button" tabindex="0">
+      <input type="file" id="csvInput" accept=".csv,text/csv" hidden="">
+      <div class="ico">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m17 8-5-5-5 5"></path><path d="M12 3v12"></path></svg>
+      </div>
+      <strong>Drop your CSV here</strong> or <span class="link">browse files</span>
+      <small>e.g. smuggling_contributions_445.csv</small>
+    </div>
+
+    <div class="divider"><span>or start from scratch</span></div>
+    <div class="manual">
+      <input type="number" class="field" id="numPlayers" min="1" placeholder="Number of players">
+      <button class="btn btn-ghost" id="manualBtn">Start manually</button>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="card hidden" id="step2">
+    <div class="card-head">
+      <div>
+        <h2>Contributors</h2>
+        <p>Check names and contribution scores. Shares must add up to 100%.</p>
+      </div>
+      <span class="pill" id="pctPill">0%</span>
+    </div>
+    <div class="players-grid tbl-head">
+      <span class="rank-h"></span><span>Player</span><span style="text-align:right">Share</span><span class="bar-h"></span><span></span>
+    </div>
+    <div id="playersList"></div>
+    <div class="player-foot">
+      <div class="toolbar">
+        <button class="btn btn-ghost sm" id="addPlayerBtn">+ Add player</button>
+        <button class="btn btn-ghost sm" id="evenBtn">Split evenly</button>
+        <button class="btn btn-ghost sm" id="normBtn">Scale to 100%</button>
+      </div>
+      <span class="muted" id="playerCount"></span>
+    </div>
+    <div class="alert" id="playersError"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" data-go="1">← Back</button>
+      <button class="btn btn-primary" data-go="3">Next: rewards →</button>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="card hidden" id="step3">
+    <div class="card-head">
+      <div>
+        <h2>Rewards &amp; prices</h2>
+        <p>Enter a unit price for each item. Shorthand works: <kbd>250k</kbd> <kbd>1.5m</kbd> <kbd>2b</kbd>. Press <kbd>Enter</kbd> to jump to the next price. Click the bookmark on a price to remember it for future imports. Everything else starts blank each time.</p>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span>Cash</span><b id="sCash">£0</b></div>
+      <div class="stat"><span>Item value</span><b id="sItems">£0</b><div class="sub" id="sPriced"></div></div>
+      <div class="stat"><span>Reputation</span><b id="sRep">0</b><div class="sub">Not split</div></div>
+      <div class="stat hl"><span>Total pot</span><b id="sPot">£0</b></div>
+    </div>
+
+    <div class="items-tools">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <input class="field" id="itemSearch" placeholder="Filter items…">
+      </div>
+      <label class="check"><input type="checkbox" id="unpricedOnly"> Unpriced only</label>
+      <button class="btn btn-text sm" id="clearPricesBtn" title="Forget every remembered price">Forget saved prices</button>
+    </div>
+
+    <div id="itemsList"></div>
+
+    <details class="add" id="addDetails">
+      <summary>Add an item manually</summary>
+      <div class="add-form">
+        <select class="field" id="addCat"><option>Cash</option><option selected="selected">Alcohol</option><option>Material</option><option>Smuggling Enhancement</option><option>Weapon</option><option>Armor</option><option>Thrown</option><option>Medical</option><option>Other</option></select>
+        <input class="field wide" id="addName" list="addNames" placeholder="Item name">
+        <datalist id="addNames"><option value="Blancoda Tequila"></option><option value="Repose Tequila"></option><option value="Anejo Tequila"></option><option value="Raicilla"></option></datalist>
+        <input class="field" id="addQty" placeholder="Qty" inputmode="numeric">
+        <div class="money-wrap"><span>£</span><input id="addVal" placeholder="Unit price" inputmode="decimal"></div>
+        <label class="check" id="addRememberWrap"><input type="checkbox" id="addRemember"> Remember price</label>
+        <button class="btn btn-success" id="addBtn">Add</button>
+      </div>
+    </details>
+
+    <div class="nav">
+      <button class="btn btn-ghost" data-go="2">← Back</button>
+      <button class="btn btn-primary" data-go="4">Calculate payouts →</button>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="card hidden" id="step4">
+    <div class="card-head">
+      <div>
+        <h2>Payouts</h2>
+        <p>Tick players off as you pay them. Click the copy icon to grab the exact amount.</p>
+      </div>
+    </div>
+
+    <div class="stats" id="resStats"></div>
+    <div class="alert warn" id="resWarn"></div>
+
+    <div class="pay-progress"><span id="paidText"></span><div class="bar"><i id="paidBar" style="width:0"></i></div></div>
+
+    <div style="overflow-x:auto">
+      <table class="results">
+        <thead><tr><th style="width:34px"></th><th>Player</th><th class="hide-sm">Share</th><th class="r">Payout</th><th style="width:44px"></th></tr></thead>
+        <tbody id="resBody"></tbody>
+      </table>
+    </div>
+
+    <details class="breakdown" id="breakdown">
+      <summary>Item breakdown</summary>
+      <div class="inner" id="breakdownInner"></div>
+    </details>
+
+    <div class="nav" style="flex-wrap:wrap">
+      <button class="btn btn-ghost" data-go="3">← Back</button>
+      <div class="export-row">
+        <button class="btn btn-ghost sm" id="csvBtn">Export CSV</button>
+        <button class="btn btn-ghost sm" id="csvAdvBtn">Export full CSV</button>
+        <button class="btn btn-ghost sm" id="discordAdvBtn">Copy full for Discord</button>
+        <button class="btn btn-primary sm" id="discordBtn">Copy for Discord</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = n => '£' + Math.round(n || 0).toLocaleString('en-GB');
+const fmtPlain = n => (n || 0).toLocaleString('en-GB', { maximumFractionDigits: 2 });
+const fmtPct = n => (+n.toFixed(2)).toString() + '%';
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+
+/** "£1,234", "250k", "1.5m", "2b" -> number. Empty -> 0. Garbage -> NaN */
+function parseMoney(str) {
+  const s = String(str ?? '').toLowerCase().replace(/[£$€�\s,]/g, '');
+  if (!s) return 0;
+  const m = s.match(/^(\d*\.?\d+)([kmb]?)$/);
+  if (!m) return NaN;
+  return parseFloat(m[1]) * ({ '': 1, k: 1e3, m: 1e6, b: 1e9 }[m[2]]);
+}
+/** "1,012" -> 1012 (the old version stopped at the comma and returned 1) */
+function parseQty(str) {
+  const n = parseFloat(String(str ?? '').replace(/[^\d.]/g, ''));
+  return isNaN(n) ? 0 : Math.round(n);
+}
+
+function toast(msg, kind = '') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + kind;
+  el.textContent = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 2600);
+}
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (_) {}
+    ta.remove(); return ok;
+  }
+}
+
+function download(name, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const csvCell = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+
+/* ---------- Catalogue ---------- */
+const CATALOG = {
+  'Cash': ['Cash'],
+  'Alcohol': ['Blancoda Tequila', 'Repose Tequila', 'Anejo Tequila', 'Raicilla'],
+  'Material': ['Street-Quality Enhancement', 'Syndicate-Issued Enhancement', 'Blacksite Prototype Enhancement'],
+  'Smuggling Enhancement': ['Weapons & Armor Specialist Contact', 'Alcohol Specialist Contact', 'Tech Specialist Contact', 'Leadership Specialist Contact'],
+  'Weapon': ['G36', 'Steyr AUG', 'SIG SG 550', 'FN SCAR-H', 'Desert Eagle', 'Bazooka', 'MG34', 'L86 LSW', 'MG5'],
+  'Armor': ['Tactical Plate Armour', 'Full-Body Armour', 'Blast Suit', 'New-Age Combat Fatigues'],
+  'Thrown': ['Fragmentation Grenade', 'Flash Bang Grenade', 'Illuminating Grenade', 'Tear Gas Grenade', 'Stun Grenade'],
+  'Medical': ['Bandage', 'Small Medical Kit', 'Large Medical Kit', 'Basic Trauma Kit', 'Large Trauma Kit'],
+  'Other': []
+};
+const CAT_COLORS = {
+  Cash: '#10b981', Alcohol: '#f59e0b', Material: '#a78bfa', 'Smuggling Enhancement': '#22d3ee',
+  Weapon: '#f43f5e', Armor: '#60a5fa', Armour: '#60a5fa', Thrown: '#fb923c', Medical: '#f472b6'
+};
+const catColor = c => CAT_COLORS[c] || '#94a3b8';
+const qClass = q => q < 40 ? 'q-lo' : q < 65 ? 'q-mid' : 'q-hi';
+
+/* ---------- State ---------- */
+// Only prices the user has bookmarked live here (new key, so the old "remember everything" store is ignored)
+const PRICE_KEY = 'sdw.savedPrices', SESSION_KEY = 'sdw.session', THEME_KEY = 'sdw.theme';
+let players = [];   // {name, percent}
+let items = [];     // {id, category, name, quality, qty, val, isCash, remembered}
+let rep = 0;
+let paid = {};      // name -> true
+let step = 1, maxStep = 1, nextId = 1;
+let prices = store.get(PRICE_KEY, {});
+let lastResult = null;
+
+const priceKey = it => (it.category + '|' + it.name).toLowerCase();
+const isPinned = it => !it.isCash && Object.prototype.hasOwnProperty.call(prices, priceKey(it));
+const savePrices = () => store.set(PRICE_KEY, prices);
+const PIN_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+const itemLabel = it => it.isCash ? 'Cash' : `${it.category}: ${it.name}${it.quality != null ? ` (${it.quality}% Q)` : ''}`;
+const itemsValue = () => items.filter(i => !i.isCash).reduce((s, i) => s + i.qty * (i.val || 0), 0);
+const cashValue = () => items.filter(i => i.isCash).reduce((s, i) => s + (i.val || 0), 0);
+const pot = () => itemsValue() + cashValue();
+
+function makeItem({ category, name, quality = null, qty = 1, val = 0, isCash = false }) {
+  const it = { id: nextId++, category, name, quality, qty, val, isCash, remembered: false };
+  if (!isCash && !val) {
+    const p = prices[priceKey(it)];
+    if (p) { it.val = p; it.remembered = true; }
+  }
+  return it;
+}
+
+let saveTimer;
+function saveSession() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => store.set(SESSION_KEY, { players, items, rep, paid, savedAt: Date.now() }), 250);
+}
+
+/* ---------- CSV import ---------- */
+function parseCSVLine(line) {
+  const out = []; let cur = '', q = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+    else if (ch === ',' && !q) { out.push(cur.trim()); cur = ''; }
+    else cur += ch;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function parseItemName(full) {
+  let category = 'Other', rest = full.trim();
+  const m = rest.match(/^([^:]+):\s*(.+)$/);
+  if (m) { category = m[1].trim(); rest = m[2].trim(); }
+  let quality = null;
+  const q = rest.match(/^(.*?)\s*\(\s*([\d.]+)\s*%\s*Quality\s*\)\s*$/i);
+  if (q) { rest = q[1].trim(); quality = parseFloat(q[2]); }
+  return { category, name: rest, quality };
+}
+
+function importCSV(text) {
+  text = text.replace(/^﻿/, '');
+  const newPlayers = [], newItems = [], skipped = [];
+  let newRep = 0, section = 'players';
+  nextId = 1;
+
+  for (const raw of text.split(/\r?\n/)) {
+    if (!raw.trim()) continue;
+    const [a = '', b = ''] = parseCSVLine(raw);
+    if (/^contributor$/i.test(a)) { section = 'players'; continue; }
+    if (/^reward$/i.test(a)) { section = 'rewards'; continue; }
+
+    if (section === 'players') {
+      const pct = parseFloat(b.replace(/[%,\s]/g, ''));
+      if (a && !isNaN(pct)) newPlayers.push({ name: a, percent: pct });
+    } else {
+      if (/^reputation$/i.test(a)) { newRep += parseQty(b); continue; }
+      if (/^cash$/i.test(a)) {
+        // Keep digits only, so any currency symbol or encoding junk can't zero the cash
+        const v = parseFloat(b.replace(/[^\d.]/g, '')) || 0;
+        if (!v) skipped.push(raw.trim());
+        const c = newItems.find(i => i.isCash);
+        if (c) c.val += v; else newItems.push(makeItem({ category: 'Cash', name: 'Cash', qty: 1, val: v, isCash: true }));
+        continue;
+      }
+      if (!a) continue;
+      const qty = parseQty(b);
+      if (!qty) { skipped.push(raw.trim()); continue; }
+      const info = parseItemName(a);
+      const dup = newItems.find(i => !i.isCash && i.category === info.category && i.name === info.name && i.quality === info.quality);
+      if (dup) dup.qty += qty;
+      else newItems.push(makeItem({ ...info, qty }));
+    }
+  }
+
+  if (!newPlayers.length && !newItems.length) {
+    toast("Couldn't find any contributors or rewards in that file", 'err');
+    return;
+  }
+  players = newPlayers; items = newItems; rep = newRep; paid = {};
+  saveSession();
+  const remembered = items.filter(i => i.remembered).length;
+  toast(`Loaded ${players.length} contributors and ${items.length} rewards` + (remembered ? ` · ${remembered} prices remembered` : ''), 'ok');
+  if (skipped.length) {
+    toast(`${skipped.length} reward line${skipped.length === 1 ? '' : 's'} couldn't be read: ${skipped.slice(0, 3).join(' | ')}`, 'warn');
+    console.warn('Skipped reward lines:', skipped);
+  }
+  maxStep = 1;
+  go(2);
+}
+
+function readFile(file) {
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    // Some exports are UTF-8, others are Windows-1252 (where "£" is a single byte). Try UTF-8 strictly first.
+    let text;
+    try { text = new TextDecoder('utf-8', { fatal: true }).decode(e.target.result); }
+    catch (_) { text = new TextDecoder('windows-1252').decode(e.target.result); }
+    importCSV(text);
+  };
+  r.readAsArrayBuffer(file);
+}
+
+/* ---------- Navigation ---------- */
+function show(n) {
+  step = n; maxStep = Math.max(maxStep, n);
+  for (let i = 1; i <= 4; i++) $('#step' + i).classList.toggle('hidden', i !== n);
+  document.querySelectorAll('#stepper li').forEach(li => {
+    const s = +li.dataset.step;
+    li.classList.toggle('active', s === n);
+    li.classList.toggle('done', s < n || (s <= maxStep && s !== n));
+    li.classList.toggle('reachable', s <= maxStep && s !== n);
+    li.querySelector('.dot').textContent = (s < n || (s <= maxStep && s !== n)) ? '✓' : s;
+  });
+  if (n === 1) renderResume();
+  if (n === 2) renderPlayers();
+  if (n === 3) renderItems();
+  if (n === 4) renderResults();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function go(n) {
+  if (n >= 2 && !players.length) { toast('Import a CSV or start manually first', 'warn'); return show(1); }
+  if (n >= 3 && !validatePlayers()) return show(2);
+  if (n >= 4 && pot() <= 0) { toast('Add at least one reward with a value first', 'warn'); return show(3); }
+  show(n);
+}
+
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]');
+  if (g) go(+g.dataset.go);
+  const li = e.target.closest('#stepper li.reachable');
+  if (li) go(+li.dataset.step);
+});
+
+/* ---------- Step 1 ---------- */
+const drop = $('#drop'), csvInput = $('#csvInput');
+drop.addEventListener('click', () => csvInput.click());
+drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); csvInput.click(); } });
+csvInput.addEventListener('change', () => { readFile(csvInput.files[0]); csvInput.value = ''; });
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => readFile(e.dataTransfer.files[0]));
+// Dropping anywhere on the page on step 1 also works
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => { e.preventDefault(); if (step === 1 && e.target !== drop && !drop.contains(e.target)) readFile(e.dataTransfer.files[0]); });
+
+$('#manualBtn').addEventListener('click', () => {
+  const n = parseInt($('#numPlayers').value, 10);
+  if (!n || n < 1 || n > 200) return toast('Enter a number of players (1–200)', 'warn');
+  players = Array.from({ length: n }, () => ({ name: '', percent: 0 }));
+  items = []; rep = 0; paid = {}; nextId = 1; maxStep = 1;
+  saveSession();
+  show(2);
+});
+$('#numPlayers').addEventListener('keydown', e => { if (e.key === 'Enter') $('#manualBtn').click(); });
+
+function renderResume() {
+  const s = store.get(SESSION_KEY, null);
+  const has = s && ((s.players || []).length || (s.items || []).length);
+  $('#resumeBox').classList.toggle('hidden', !has || (players.length > 0));
+  if (has) {
+    const when = new Date(s.savedAt || Date.now()).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    $('#resumeInfo').textContent = `${s.players.length} contributors · ${s.items.length} rewards · saved ${when}`;
+  }
+}
+$('#resumeBtn').addEventListener('click', () => {
+  const s = store.get(SESSION_KEY, null);
+  if (!s) return;
+  players = s.players || []; items = s.items || []; rep = s.rep || 0; paid = s.paid || {};
+  nextId = items.reduce((m, i) => Math.max(m, i.id), 0) + 1;
+  maxStep = 3;
+  go(2);
+});
+$('#discardBtn').addEventListener('click', () => { store.del(SESSION_KEY); renderResume(); });
+
+/* ---------- Step 2: players ---------- */
+function pctTotal() { return players.reduce((s, p) => s + (parseFloat(p.percent) || 0), 0); }
+
+function renderPlayers() {
+  const max = Math.max(1, ...players.map(p => +p.percent || 0));
+  $('#playersList').innerHTML = players.map((p, i) => `
+    <div class="player-row players-grid" data-i="${i}">
+      <span class="rank">${i + 1}</span>
+      <input class="field p-name" value="${esc(p.name)}" placeholder="Player name">
+      <div class="suffix"><input class="field p-pct" type="number" step="0.01" min="0" value="${p.percent || p.percent === 0 && p.name ? p.percent : ''}" placeholder="0"></div>
+      <div class="bar"><i style="width:${((+p.percent || 0) / max) * 100}%"></i></div>
+      <button class="icon-btn danger p-del" title="Remove">×</button>
+    </div>`).join('') || '<div class="empty">No players. Add one below.</div>';
+  updatePlayerSummary();
+}
+
+function updatePlayerSummary() {
+  const t = pctTotal(), ok = Math.abs(t - 100) <= 0.5;
+  const pill = $('#pctPill');
+  pill.textContent = `Total ${fmtPct(t)}`;
+  pill.className = 'pill ' + (ok ? 'ok' : t > 100 ? 'bad' : 'warn');
+  $('#playerCount').textContent = `${players.length} player${players.length === 1 ? '' : 's'}`;
+  const max = Math.max(1, ...players.map(p => +p.percent || 0));
+  document.querySelectorAll('#playersList .player-row').forEach(r => {
+    const p = players[+r.dataset.i];
+    r.querySelector('.bar > i').style.width = ((+p.percent || 0) / max) * 100 + '%';
+  });
+  if (ok) $('#playersError').textContent = '';
+}
+
+$('#playersList').addEventListener('input', e => {
+  const row = e.target.closest('.player-row'); if (!row) return;
+  const p = players[+row.dataset.i];
+  if (e.target.classList.contains('p-name')) p.name = e.target.value;
+  if (e.target.classList.contains('p-pct')) p.percent = parseFloat(e.target.value) || 0;
+  updatePlayerSummary(); saveSession();
+});
+$('#playersList').addEventListener('click', e => {
+  if (!e.target.classList.contains('p-del')) return;
+  players.splice(+e.target.closest('.player-row').dataset.i, 1);
+  renderPlayers(); saveSession();
+});
+$('#addPlayerBtn').addEventListener('click', () => {
+  players.push({ name: '', percent: 0 }); renderPlayers(); saveSession();
+  const rows = document.querySelectorAll('#playersList .p-name'); rows[rows.length - 1]?.focus();
+});
+$('#evenBtn').addEventListener('click', () => {
+  if (!players.length) return;
+  const each = Math.floor((100 / players.length) * 100) / 100;
+  players.forEach(p => p.percent = each);
+  players[0].percent = +(100 - each * (players.length - 1)).toFixed(2);
+  renderPlayers(); saveSession();
+});
+$('#normBtn').addEventListener('click', () => {
+  const t = pctTotal();
+  if (!t) return toast('Enter some scores first', 'warn');
+  players.forEach(p => p.percent = +((p.percent || 0) / t * 100).toFixed(2));
+  const drift = +(100 - pctTotal()).toFixed(2);
+  if (drift) { const top = players.reduce((a, b) => (b.percent > a.percent ? b : a)); top.percent = +(top.percent + drift).toFixed(2); }
+  renderPlayers(); saveSession();
+});
+
+function validatePlayers() {
+  const err = $('#playersError');
+  const active = players.filter(p => p.name.trim() || (+p.percent > 0));
+  if (!active.length) { err.textContent = 'Add at least one player.'; return false; }
+  if (active.some(p => !p.name.trim())) { err.textContent = 'Every player with a share needs a name.'; return false; }
+  const names = active.map(p => p.name.trim().toLowerCase());
+  const dupe = names.find((n, i) => names.indexOf(n) !== i);
+  if (dupe) { err.textContent = `"${dupe}" is listed twice. Merge or rename them.`; return false; }
+  const t = pctTotal();
+  if (Math.abs(t - 100) > 0.5) { err.textContent = `Shares add up to ${fmtPct(t)}, not 100%. Fix the numbers or press "Scale to 100%".`; return false; }
+  err.textContent = '';
+  return true;
+}
+
+/* ---------- Step 3: items ---------- */
+function itemRowHTML(it) {
+  const priced = it.val > 0;
+  const nameHTML = it.isCash
+    ? '<span class="nm">Cash</span>'
+    : `<span class="nm" title="${esc(it.name)}">${esc(it.name)}</span>${it.quality != null ? `<span class="qbadge ${qClass(it.quality)}">${it.quality}% Q</span>` : ''}`;
+  const qtyHTML = it.isCash
+    ? '<span class="muted" style="text-align:right;padding-right:12px">Total</span>'
+    : `<input class="field qty-in" inputmode="numeric" value="${fmtPlain(it.qty)}" aria-label="Quantity">`;
+  return `
+    <div class="item-row items-grid${priced ? ' priced' : ''}" data-id="${it.id}" data-search="${esc((it.category + ' ' + it.name).toLowerCase())}">
+      <div class="item-name">${nameHTML}</div>
+      ${qtyHTML}
+      <div class="money-wrap"><span>£</span><input class="money${it.isCash ? '' : ' has-pin'}" inputmode="decimal"
+        value="${priced ? fmtPlain(it.val) : ''}" placeholder="${it.isCash ? 'Total cash' : 'Unit price'}" aria-label="Price">
+        ${it.isCash ? '' : pinHTML(it)}</div>
+      <div class="subtotal num">${priced ? fmt(it.isCash ? it.val : it.qty * it.val) : '—'}</div>
+      <button class="icon-btn danger i-del" title="Remove">×</button>
+    </div>`;
+}
+
+function pinHTML(it) {
+  const on = isPinned(it);
+  return `<button type="button" class="pin${on ? ' on' : ''}" aria-pressed="${on}"
+    title="${on ? 'Price is remembered for future imports. Click to forget it' : 'Remember this price for future imports'}">${PIN_SVG}</button>`;
+}
+/** Redraw the bookmark on every row for this item (e.g. both MG5s) */
+function refreshPins(key) {
+  items.forEach(o => {
+    if (o.isCash || (key && priceKey(o) !== key)) return;
+    const r = itemsList.querySelector(`[data-id="${o.id}"] .pin`);
+    if (r) r.outerHTML = pinHTML(o);
+  });
+}
+
+function renderItems() {
+  const list = $('#itemsList');
+  if (!items.length) {
+    list.innerHTML = '<div class="empty">No rewards yet. Add them with the form below.</div>';
+    $('#addDetails').open = true;
+    updateItemStats(); return;
+  }
+  const groups = new Map();
+  items.forEach(it => { if (!groups.has(it.category)) groups.set(it.category, []); groups.get(it.category).push(it); });
+  const ordered = [...groups.entries()].sort((a, b) => (b[0] === 'Cash') - (a[0] === 'Cash'));
+  list.innerHTML = ordered.map(([cat, arr]) => `
+    <div class="group" data-cat="${esc(cat)}">
+      <div class="group-head">
+        <span class="cat-dot" style="--c:${catColor(cat)}"></span>
+        <h3>${esc(cat)}</h3>
+        <span class="count">${arr.length} ${arr.length === 1 ? 'line' : 'lines'}</span>
+        <span class="gt num"></span>
+      </div>
+      ${cat === 'Cash' ? '' : '<div class="items-grid tbl-head"><span>Item</span><span style="text-align:right">Qty</span><span style="text-align:right">Unit price</span><span style="text-align:right">Subtotal</span><span></span></div>'}
+      ${arr.map(itemRowHTML).join('')}
+    </div>`).join('');
+  applyFilter(); updateItemStats();
+}
+
+function refreshRow(row, it) {
+  const priced = it.val > 0;
+  row.classList.toggle('priced', priced);
+  row.querySelector('.subtotal').textContent = priced ? fmt(it.isCash ? it.val : it.qty * it.val) : '—';
+}
+
+function updateItemStats() {
+  const nonCash = items.filter(i => !i.isCash);
+  const priced = nonCash.filter(i => i.val > 0).length;
+  $('#sCash').textContent = fmt(cashValue());
+  $('#sItems').textContent = fmt(itemsValue());
+  $('#sPriced').textContent = nonCash.length ? `${priced} of ${nonCash.length} priced` : 'No items';
+  $('#sPriced').style.color = priced < nonCash.length ? 'var(--warn)' : 'var(--success)';
+  $('#sRep').textContent = rep.toLocaleString('en-GB');
+  $('#sPot').textContent = fmt(pot());
+  document.querySelectorAll('#itemsList .group').forEach(g => {
+    const cat = g.dataset.cat;
+    const v = items.filter(i => i.category === cat).reduce((s, i) => s + (i.isCash ? i.val : i.qty * i.val), 0);
+    g.querySelector('.gt').textContent = fmt(v);
+  });
+}
+
+function applyFilter() {
+  const q = $('#itemSearch').value.trim().toLowerCase();
+  const only = $('#unpricedOnly').checked;
+  document.querySelectorAll('#itemsList .group').forEach(g => {
+    let any = false;
+    g.querySelectorAll('.item-row').forEach(r => {
+      const vis = (!q || r.dataset.search.includes(q)) && (!only || !r.classList.contains('priced'));
+      r.classList.toggle('hidden', !vis); any = any || vis;
+    });
+    g.classList.toggle('hidden', !any);
+  });
+}
+$('#itemSearch').addEventListener('input', applyFilter);
+$('#unpricedOnly').addEventListener('change', applyFilter);
+
+const itemById = id => items.find(i => i.id === +id);
+const itemsList = $('#itemsList');
+
+itemsList.addEventListener('input', e => {
+  const row = e.target.closest('.item-row'); if (!row) return;
+  const it = itemById(row.dataset.id);
+  if (e.target.classList.contains('money')) {
+    const v = parseMoney(e.target.value);
+    e.target.classList.toggle('invalid', isNaN(v));
+    it.val = isNaN(v) ? 0 : v;
+  } else if (e.target.classList.contains('qty-in')) {
+    it.qty = parseQty(e.target.value);
+  }
+  refreshRow(row, it); updateItemStats(); saveSession();
+});
+
+itemsList.addEventListener('change', e => {
+  const row = e.target.closest('.item-row'); if (!row) return;
+  const it = itemById(row.dataset.id);
+  if (e.target.classList.contains('qty-in')) { e.target.value = fmtPlain(it.qty); return; }
+  if (!e.target.classList.contains('money') || !(it.val > 0)) return;
+  e.target.value = fmtPlain(it.val);
+  if (it.isCash) return;
+  // Only update the saved price if this item is bookmarked
+  if (isPinned(it)) { prices[priceKey(it)] = it.val; savePrices(); }
+  // Fill any unpriced copies of the same item in this run (e.g. two MG5s)
+  let filled = 0;
+  items.forEach(o => {
+    if (o === it || o.isCash || o.val > 0 || priceKey(o) !== priceKey(it)) return;
+    o.val = it.val; filled++;
+    const r = itemsList.querySelector(`[data-id="${o.id}"]`);
+    if (r) { r.querySelector('.money').value = fmtPlain(o.val); refreshRow(r, o); }
+  });
+  if (filled) toast(`Also priced ${filled} other ${it.name}`);
+  updateItemStats(); saveSession();
+});
+
+itemsList.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !e.target.matches('.money, .qty-in')) return;
+  e.preventDefault();
+  const all = [...itemsList.querySelectorAll('.item-row:not(.hidden) .money')];
+  const cur = e.target.closest('.item-row').querySelector('.money');
+  const next = all[all.indexOf(cur) + (e.target === cur ? 1 : 0)];
+  e.target.dispatchEvent(new Event('change', { bubbles: true }));
+  if (next) { next.focus(); next.select(); } else e.target.blur();
+});
+itemsList.addEventListener('focusin', e => { if (e.target.matches('.money, .qty-in')) e.target.select(); });
+
+itemsList.addEventListener('click', e => {
+  const pin = e.target.closest('.pin');
+  if (pin) {
+    const it = itemById(pin.closest('.item-row').dataset.id), key = priceKey(it);
+    if (isPinned(it)) {
+      delete prices[key]; savePrices();
+      toast(`${it.name} will start blank next time`);
+    } else {
+      if (!(it.val > 0)) { toast('Enter a price first, then bookmark it', 'warn'); pin.closest('.money-wrap').querySelector('input').focus(); return; }
+      prices[key] = it.val; savePrices();
+      toast(`Remembering ${fmt(it.val)} for ${it.name}`, 'ok');
+    }
+    refreshPins(key);
+    return;
+  }
+  if (!e.target.classList.contains('i-del')) return;
+  const id = +e.target.closest('.item-row').dataset.id;
+  items = items.filter(i => i.id !== id);
+  renderItems(); saveSession();
+});
+
+$('#clearPricesBtn').addEventListener('click', () => {
+  const n = Object.keys(prices).length;
+  if (!n) return toast('No saved prices to forget');
+  if (!confirm(`Forget all ${n} remembered price${n === 1 ? '' : 's'}? Prices already entered on this page stay.`)) return;
+  prices = {}; store.del(PRICE_KEY);
+  refreshPins(); toast('Saved prices cleared');
+});
+
+// Manual add form
+const addCat = $('#addCat');
+addCat.innerHTML = Object.keys(CATALOG).map(c => `<option>${esc(c)}</option>`).join('');
+addCat.value = 'Alcohol';
+function syncAddForm() {
+  const cat = addCat.value, cash = cat === 'Cash';
+  $('#addNames').innerHTML = CATALOG[cat].map(n => `<option value="${esc(n)}">`).join('');
+  $('#addName').classList.toggle('hidden', cash);
+  $('#addQty').classList.toggle('hidden', cash);
+  $('#addRememberWrap').classList.toggle('hidden', cash);
+  $('#addVal').placeholder = cash ? 'Total cash' : 'Unit price';
+  $('#addName').value = '';
+}
+addCat.addEventListener('change', syncAddForm); syncAddForm();
+$('#addVal').addEventListener('keydown', e => { if (e.key === 'Enter') $('#addBtn').click(); });
+$('#addBtn').addEventListener('click', () => {
+  const cat = addCat.value, val = parseMoney($('#addVal').value);
+  if (isNaN(val)) return toast('That price looks wrong. Try 250k, 1.5m or 12,000', 'warn');
+  if (cat === 'Cash') {
+    if (!val) return toast('Enter the cash amount', 'warn');
+    const c = items.find(i => i.isCash);
+    if (c) c.val += val; else items.unshift(makeItem({ category: 'Cash', name: 'Cash', val, isCash: true }));
+  } else {
+    const name = $('#addName').value.trim(), qty = parseQty($('#addQty').value);
+    if (!name) return toast('Enter an item name', 'warn');
+    if (!qty) return toast('Enter a quantity', 'warn');
+    const ex = items.find(i => !i.isCash && i.category === cat && i.name.toLowerCase() === name.toLowerCase() && i.quality == null);
+    if (ex) { ex.qty += qty; if (val) ex.val = val; }
+    else items.push(makeItem({ category: cat, name, qty, val }));
+    if (val && $('#addRemember').checked) { prices[(cat + '|' + name).toLowerCase()] = val; savePrices(); }
+  }
+  $('#addName').value = ''; $('#addQty').value = ''; $('#addVal').value = ''; $('#addRemember').checked = false;
+  renderItems(); saveSession();
+  (cat === 'Cash' ? $('#addVal') : $('#addName')).focus();
+});
+
+/* ---------- Step 4: results ---------- */
+/** Splits the pot so payouts add up to exactly the total (largest-remainder rounding). */
+function computePayouts() {
+  const total = Math.round(pot());
+  const active = players.filter(p => p.name.trim() && +p.percent > 0);
+  const sum = active.reduce((s, p) => s + +p.percent, 0);
+  const rows = active.map(p => {
+    const exact = total * (+p.percent) / sum;
+    return { name: p.name.trim(), percent: +p.percent, payout: Math.floor(exact), frac: exact - Math.floor(exact) };
+  });
+  let rem = total - rows.reduce((s, r) => s + r.payout, 0);
+  [...rows].sort((a, b) => b.frac - a.frac).forEach(r => { if (rem > 0) { r.payout++; rem--; } });
+  return { total, rows };
+}
+
+function renderResults() {
+  lastResult = computePayouts();
+  const { total, rows } = lastResult;
+  const nonCash = items.filter(i => !i.isCash);
+  const unpriced = nonCash.filter(i => !(i.val > 0));
+  const maxPct = Math.max(1, ...rows.map(r => r.percent));
+
+  $('#resStats').innerHTML = `
+    <div class="stat hl"><span>Total pot</span><b>${fmt(total)}</b></div>
+    <div class="stat"><span>Cash</span><b>${fmt(cashValue())}</b></div>
+    <div class="stat"><span>Item value</span><b>${fmt(itemsValue())}</b><div class="sub">${nonCash.length} item lines</div></div>
+    <div class="stat"><span>Contributors</span><b>${rows.length}</b><div class="sub">Avg ${fmt(rows.length ? total / rows.length : 0)}</div></div>`;
+
+  $('#resWarn').textContent = unpriced.length
+    ? `${unpriced.length} item${unpriced.length === 1 ? ' has' : 's have'} no price and ${unpriced.length === 1 ? 'is' : 'are'} counted as £0: ${unpriced.slice(0, 4).map(i => i.name).join(', ')}${unpriced.length > 4 ? '…' : ''}`
+    : '';
+
+  $('#resBody').innerHTML = rows.map((r, i) => `
+    <tr data-name="${esc(r.name)}" class="${paid[r.name] ? 'paid' : ''}">
+      <td><input type="checkbox" class="paybox" ${paid[r.name] ? 'checked' : ''} aria-label="Mark ${esc(r.name)} as paid"></td>
+      <td><span class="pname">${esc(r.name)}</span></td>
+      <td class="hide-sm"><div class="share-cell"><div class="bar"><i style="width:${r.percent / maxPct * 100}%"></i></div><span class="pct">${fmtPct(r.percent)}</span></div></td>
+      <td class="r"><span class="payout">${fmt(r.payout)}</span></td>
+      <td><button class="icon-btn copy-pay" data-amt="${r.payout}" title="Copy amount">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button></td>
+    </tr>`).join('');
+  updatePaid();
+
+  $('#breakdownInner').innerHTML = `
+    <table class="bd">
+      <thead><tr><th>Item</th><th class="r">Qty</th><th class="r">Per unit</th><th class="r">Subtotal</th></tr></thead>
+      <tbody>${items.map(i => `<tr><td>${esc(itemLabel(i))}</td><td class="r">${i.isCash ? '' : fmtPlain(i.qty)}</td><td class="r">${i.isCash ? '' : (i.val > 0 ? fmt(i.val) : '<span style="color:var(--warn)">unpriced</span>')}</td><td class="r">${fmt(i.isCash ? i.val : i.qty * i.val)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td colspan="3">Grand total</td><td class="r">${fmt(total)}</td></tr></tfoot>
+    </table>`;
+}
+
+function updatePaid() {
+  if (!lastResult) return;
+  const rows = lastResult.rows;
+  const done = rows.filter(r => paid[r.name]);
+  const amt = done.reduce((s, r) => s + r.payout, 0);
+  $('#paidText').textContent = `${done.length} of ${rows.length} paid · ${fmt(amt)} of ${fmt(lastResult.total)}`;
+  $('#paidBar').style.width = (lastResult.total ? amt / lastResult.total * 100 : 0) + '%';
+}
+
+$('#resBody').addEventListener('change', e => {
+  if (!e.target.classList.contains('paybox')) return;
+  const tr = e.target.closest('tr'), name = tr.dataset.name;
+  if (e.target.checked) paid[name] = true; else delete paid[name];
+  tr.classList.toggle('paid', e.target.checked);
+  updatePaid(); saveSession();
+});
+$('#resBody').addEventListener('click', async e => {
+  const b = e.target.closest('.copy-pay'); if (!b) return;
+  if (await copyText(b.dataset.amt)) {
+    b.classList.add('ok'); setTimeout(() => b.classList.remove('ok'), 1200);
+    toast(`Copied ${(+b.dataset.amt).toLocaleString('en-GB')}`);
+  }
+});
+
+const padR = (s, n) => { s = String(s); return s.length >= n ? s.slice(0, n) : s + ' '.repeat(n - s.length); };
+const padL = (s, n) => { s = String(s); return s.length >= n ? s : ' '.repeat(n - s.length) + s; };
+
+function discordText(full) {
+  const { total, rows } = lastResult;
+  const w = Math.min(20, Math.max(6, ...rows.map(r => r.name.length)));
+  const payW = Math.max(...rows.map(r => fmt(r.payout).length));
+  let t = `SMUGGLING PAYOUTS\nTotal pot: ${fmt(total)}\n\n`;
+  rows.forEach((r, i) => { t += `${padL(i + 1, 2)}. ${padR(r.name, w)} ${padL(fmtPct(r.percent), 6)}  ${padL(fmt(r.payout), payW)}\n`; });
+  if (full) {
+    t += `\nREWARDS\n`;
+    items.forEach(i => {
+      t += i.isCash ? `Cash ${fmt(i.val)}\n` : `${itemLabel(i)} x${fmtPlain(i.qty)} @ ${fmt(i.val)} = ${fmt(i.qty * i.val)}\n`;
+    });
+    t += `\nGrand total: ${fmt(total)}`;
+  }
+  return '```\n' + t.trimEnd() + '\n```';
+}
+async function copyDiscord(full) {
+  const text = discordText(full);
+  if (!(await copyText(text))) return toast("Couldn't access the clipboard", 'err');
+  if (text.length > 2000) toast(`Copied, but it's ${text.length.toLocaleString()} characters. Discord's limit is 2,000 without Nitro.`, 'warn');
+  else toast('Copied for Discord', 'ok');
+}
+$('#discordBtn').addEventListener('click', () => copyDiscord(false));
+$('#discordAdvBtn').addEventListener('click', () => copyDiscord(true));
+
+$('#csvBtn').addEventListener('click', () => {
+  let csv = 'Player,Contribution %,Payout\n';
+  lastResult.rows.forEach(r => { csv += [r.name, r.percent, r.payout].map(csvCell).join(',') + '\n'; });
+  download('distribution.csv', csv);
+});
+$('#csvAdvBtn').addEventListener('click', () => {
+  let csv = 'PLAYER DISTRIBUTION\nPlayer,Contribution %,Payout,Paid\n';
+  lastResult.rows.forEach(r => { csv += [r.name, r.percent, r.payout, paid[r.name] ? 'Yes' : ''].map(csvCell).join(',') + '\n'; });
+  csv += '\nITEM BREAKDOWN\nCategory,Item,Quality %,Qty,Per Unit,Subtotal\n';
+  items.forEach(i => {
+    csv += [i.category, i.name, i.quality ?? '', i.isCash ? '' : i.qty, i.isCash ? '' : i.val, i.isCash ? i.val : i.qty * i.val].map(csvCell).join(',') + '\n';
+  });
+  csv += `\nReputation (not split),,,${rep}\nGrand Total,,,,,${lastResult.total}\n`;
+  download('advanced_distribution.csv', csv);
+});
+
+/* ---------- Theme ---------- */
+const SUN = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const MOON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>';
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  $('#themeBtn').innerHTML = t === 'dark' ? SUN : MOON;
+}
+let theme = store.get(THEME_KEY, null);
+if (!theme) { try { theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'; } catch (e) { theme = 'dark'; } }
+setTheme(theme);
+$('#themeBtn').addEventListener('click', () => {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  setTheme(theme); store.set(THEME_KEY, theme);
+});
+
+show(1);
+</script>
+
+
+</body></html>
