@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cartel Empire Property Calculator</title>
+<meta name="description" content="Cost, upkeep, home value and rent payback for every Cartel Empire property and upgrade.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090d;
+  --surface:rgba(20,23,32,.78);
+  --surface-solid:#13161f;
+  --surface-2:#191d29;
+  --surface-3:#212637;
+  --border:rgba(148,163,184,.11);
+  --border-strong:rgba(148,163,184,.22);
+  --text:#e8ebf3;
+  --muted:#8c94a8;
+  --faint:#596176;
+  --accent:#34d399;
+  --accent-ink:#04261a;
+  --accent-soft:rgba(52,211,153,.12);
+  --danger:#f87171;
+  --warn:#fbbf24;
+  --radius:18px;
+  --radius-sm:11px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --shadow:0 1px 0 rgba(255,255,255,.035) inset, 0 24px 48px -28px rgba(0,0,0,.75);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);
+  background-image:
+    radial-gradient(900px 500px at 8% -10%, rgba(52,211,153,.09), transparent 60%),
+    radial-gradient(800px 500px at 100% 0%, rgba(96,165,250,.07), transparent 60%);
+  background-attachment:fixed;
+  color:var(--text);
+  line-height:1.45;
+  font-size:15px;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.num,.money,input{font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1320px;margin:0 auto;padding:28px 24px 120px}
+.top{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px;flex:1;min-width:260px}
+.logo{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#34d399,#0ea5e9);color:#04261a;box-shadow:0 10px 30px -10px rgba(52,211,153,.6)}
+.logo svg{width:24px;height:24px;stroke-width:2.2}
+.brand h1{font-size:1.45rem;font-weight:800;letter-spacing:-.02em}
+.brand p{color:var(--muted);font-size:.9rem}
+.top-actions{display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;
+  background:var(--surface-2);border:1px solid var(--border);font-weight:600;font-size:.88rem;
+  transition:background .2s,border-color .2s,transform .15s var(--ease)}
+.btn:hover{background:var(--surface-3);border-color:var(--border-strong)}
+.btn:active{transform:scale(.97)}
+.btn svg.i{width:16px;height:16px}
+.btn.ghost{background:transparent}
+.btn.sm{padding:6px 11px;font-size:.8rem;border-radius:10px}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:22px;align-items:start}
+.main-col{display:flex;flex-direction:column;gap:22px;min-width:0}
+.side-col{position:sticky;top:20px;display:flex;flex-direction:column;gap:22px;
+  max-height:calc(100vh - 40px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--surface-3) transparent;padding-bottom:2px}
+.side-col > *{flex-shrink:0}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:22px}
+.card-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.card-head h2{font-size:1.05rem;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.card-head h2 .ico{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--surface-3);color:var(--muted)}
+.card-head h2 .ico svg{width:17px;height:17px}
+.card-head .spacer{flex:1}
+.hint{color:var(--muted);font-size:.84rem}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;padding:4px 9px;border-radius:999px;
+  background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.2)}
+.badge[hidden]{display:none}
+
+/* ---------- property picker ---------- */
+.picker{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.prop{position:relative;text-align:left;padding:14px 12px 12px;border-radius:14px;background:var(--surface-2);
+  border:1px solid var(--border);transition:all .25s var(--ease);min-width:0}
+.prop:hover{border-color:var(--border-strong);transform:translateY(-2px)}
+.prop .tier{display:flex;gap:3px;margin-bottom:10px}
+.prop .tier i{width:6px;height:6px;border-radius:2px;background:var(--surface-3)}
+.prop .tier i.on{background:var(--muted)}
+.prop b{display:block;font-size:.9rem;font-weight:700;line-height:1.2;margin-bottom:6px;min-height:2.4em}
+.prop span{display:block;font-size:.78rem;color:var(--muted)}
+.prop .pc{color:var(--text);font-weight:600;font-size:.85rem}
+.prop.active{background:linear-gradient(180deg,rgba(52,211,153,.14),rgba(52,211,153,.04));border-color:rgba(52,211,153,.55);
+  box-shadow:0 0 0 1px rgba(52,211,153,.25),0 14px 30px -18px rgba(52,211,153,.6)}
+.prop.active .tier i.on{background:var(--accent)}
+.prop-info{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:.85rem;color:var(--muted)}
+.prop-info b{color:var(--text);font-weight:600}
+.caps{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cap{display:inline-flex;align-items:center;gap:6px;padding:4px 9px 4px 7px;border-radius:999px;background:var(--surface-2);
+  border:1px solid var(--border);font-size:.78rem;color:var(--muted)}
+.cap svg.i{width:13px;height:13px;color:var(--c)}
+.cap b{color:var(--text)}
+.cap.na{opacity:.45}
+
+/* ---------- construction ---------- */
+.rows{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border);flex-wrap:wrap}
+.row .lbl{flex:1;min-width:160px}
+.row .lbl b{display:block;font-weight:600}
+.row .lbl small{color:var(--muted);font-size:.8rem}
+.amt{font-weight:700;min-width:130px;text-align:right;transition:color .2s,opacity .2s}
+.amt.off{color:var(--faint);text-decoration:line-through;font-weight:500}
+
+.switch{position:relative;width:42px;height:24px;flex:none}
+.switch input{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:1;margin:0}
+.switch .track{position:absolute;inset:0;border-radius:999px;background:var(--surface-3);border:1px solid var(--border-strong);transition:background .25s var(--ease)}
+.switch .track::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#cbd5e1;transition:transform .25s var(--ease),background .25s}
+.switch input:checked + .track{background:var(--accent);border-color:transparent}
+.switch input:checked + .track::after{transform:translateX(18px);background:#fff}
+.switch input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+
+.field{display:flex;flex-direction:column;gap:5px;font-size:.74rem;color:var(--muted);font-weight:500;min-width:0}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-wrap i{position:absolute;left:12px;font-style:normal;color:var(--faint);pointer-events:none;font-weight:600}
+.input-wrap i + input{padding-left:26px}
+input.in{width:100%;background:rgba(5,7,12,.55);border:1px solid var(--border-strong);border-radius:10px;padding:10px 12px;
+  font-size:.95rem;font-weight:600;transition:border-color .2s,box-shadow .2s}
+input.in::placeholder{color:var(--faint);font-weight:500}
+input.in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+input.in.invalid{border-color:var(--danger);box-shadow:0 0 0 3px rgba(248,113,113,.15)}
+.plot-input{width:190px}
+
+.mats-head{display:flex;align-items:center;gap:12px;margin:22px 0 12px;flex-wrap:wrap}
+.mats-head h3{font-size:.95rem;font-weight:700}
+.mat{display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(90px,.8fr) minmax(110px,1fr) minmax(120px,1fr);gap:12px;align-items:center;
+  padding:12px 14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border);margin-bottom:8px}
+.mat-name{display:flex;align-items:center;gap:11px;min-width:0}
+.mat-name .dot{width:10px;height:10px;border-radius:3px;background:var(--c);flex:none;box-shadow:0 0 12px var(--c)}
+.mat-name b{display:block;font-weight:600}
+.mat-name small{display:block;color:var(--muted);font-size:.78rem}
+.mat-cost{text-align:right}
+.mat-cost b{display:block;font-weight:700}
+.mat-cost small{color:var(--muted);font-size:.76rem}
+.mat-cost small.ok{color:var(--accent)}
+
+/* ---------- upgrades ---------- */
+.up-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.up{--c:#94a3b8;position:relative;padding:16px;border-radius:15px;background:var(--surface-2);border:1px solid var(--border);
+  transition:border-color .3s,opacity .3s;min-width:0}
+.up.has-sel{border-color:color-mix(in srgb,var(--c) 40%,transparent)}
+.up-head{display:flex;align-items:flex-start;gap:12px}
+.up-ico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none;
+  background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
+.up-ico svg.i{width:19px;height:19px}
+.up-title{flex:1;min-width:0}
+.up-title h3{font-size:.98rem;font-weight:700}
+.up-title p{color:var(--muted);font-size:.78rem;line-height:1.35}
+.up-cost{text-align:right;font-weight:700;white-space:nowrap}
+.up-cost small{display:block;color:var(--muted);font-size:.72rem;font-weight:500}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 10px}
+.pill{min-width:36px;height:34px;padding:0 10px;border-radius:9px;background:var(--surface-3);border:1px solid var(--border);
+  font-weight:700;font-size:.85rem;color:var(--muted);display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  transition:background .2s var(--ease),color .2s,border-color .2s,transform .15s var(--ease)}
+.pill:hover:not(:disabled){border-color:var(--c);color:var(--text)}
+.pill:active:not(:disabled){transform:scale(.92)}
+.pill.zero{font-size:.75rem;font-weight:600}
+.pill.zero.on{background:var(--surface-solid);color:var(--text);border-color:var(--border-strong)}
+.pill.is-own{background:color-mix(in srgb,var(--c) 10%,transparent);color:color-mix(in srgb,var(--c) 75%,#fff);border-color:color-mix(in srgb,var(--c) 30%,transparent)}
+.pill.is-own::before{content:"✓";font-size:.7rem;opacity:.8}
+.pill.is-sel{background:var(--c);color:#0b0d12;border-color:transparent}
+.pill.is-target{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 30%,transparent)}
+.pill:disabled{cursor:not-allowed;opacity:.35;border-style:dashed;background:transparent}
+.pill:disabled svg.i{width:12px;height:12px}
+.readout{font-size:.83rem;color:var(--muted);min-height:1.3em}
+.readout b{color:var(--text);font-weight:600}
+.readout .ben{color:var(--c)}
+.up-foot{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.own-sel{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted)}
+.own-sel select{background:rgba(5,7,12,.55);border:1px solid var(--border-strong);border-radius:8px;padding:5px 8px;font-size:.8rem;max-width:200px}
+.toggle-levels{margin-left:auto;font-size:.78rem;color:var(--muted);display:inline-flex;align-items:center;gap:4px;padding:4px 6px;border-radius:7px}
+.toggle-levels:hover{color:var(--text);background:var(--surface-3)}
+.toggle-levels svg.i{width:14px;height:14px;transition:transform .25s var(--ease)}
+.up.open .toggle-levels svg.i{transform:rotate(180deg)}
+.levels{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s var(--ease)}
+.up.open .levels{grid-template-rows:1fr}
+.levels > div{overflow:hidden}
+.lv-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:12px}
+.lv-table td{padding:7px 6px;border-top:1px solid var(--border);vertical-align:top}
+.lv-table tr{cursor:pointer;transition:background .15s}
+.lv-table tr:hover{background:rgba(255,255,255,.03)}
+.lv-table tr.locked{opacity:.4;cursor:not-allowed}
+.lv-table tr.own td:first-child{color:var(--c)}
+.lv-table tr.sel{background:color-mix(in srgb,var(--c) 9%,transparent)}
+.lv-table td.lvn{width:30px;font-weight:700;color:var(--muted)}
+.lv-table td.lvc{text-align:right;white-space:nowrap;font-weight:600}
+.lv-table .lvb{color:var(--muted);display:block;font-size:.75rem}
+.up.na{opacity:.5}
+.up.na .pills,.up.na .up-foot{pointer-events:none}
+.na-note{display:none;font-size:.78rem;color:var(--faint);margin-top:10px}
+.up.na .na-note{display:block}
+.up.na .readout{display:none}
+.dock-mats{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.dock-mats span{font-size:.7rem;color:var(--muted);background:var(--surface-3);padding:2px 6px;border-radius:6px}
+
+/* ---------- summary ---------- */
+.total-card{position:relative;overflow:hidden}
+.total-card::before{content:"";position:absolute;inset:-1px;background:radial-gradient(400px 200px at 100% 0%,rgba(52,211,153,.14),transparent 70%);pointer-events:none}
+.eyebrow{font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.grand{font-size:2.35rem;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:6px 0 4px;
+  background:linear-gradient(90deg,#ecfdf5,#6ee7b7);-webkit-background-clip:text;background-clip:text;color:transparent;word-break:break-all}
+.grand-sub{color:var(--muted);font-size:.84rem}
+.stack{display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--surface-3);margin:18px 0 14px;gap:2px}
+.stack span{display:block;height:100%;background:var(--c);transition:flex-grow .5s var(--ease);flex-grow:0;flex-basis:0;min-width:0}
+.legend{display:flex;flex-direction:column;gap:8px}
+.legend div{display:flex;align-items:center;gap:10px;font-size:.86rem}
+.legend i{width:9px;height:9px;border-radius:3px;background:var(--c);flex:none}
+.legend span{flex:1;color:var(--muted)}
+.legend b{font-weight:600}
+.legend div.zero{opacity:.45}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)}
+.stat{padding:11px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);min-width:0}
+.stat span{display:block;font-size:.72rem;color:var(--muted);margin-bottom:3px}
+.stat b{font-size:.98rem;font-weight:700;word-break:break-word}
+.stat.wide{grid-column:1/-1}
+.foot-note{font-size:.74rem;color:var(--faint);margin-top:12px;line-height:1.45}
+
+/* ---------- rent ---------- */
+.seg{display:flex;padding:4px;border-radius:12px;background:rgba(5,7,12,.55);border:1px solid var(--border);gap:4px;margin:14px 0 4px}
+.seg button{flex:1;padding:8px 6px;border-radius:9px;font-size:.8rem;font-weight:600;color:var(--muted);transition:all .25s var(--ease)}
+.seg button.on{background:var(--surface-3);color:var(--text);box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 4px 12px -6px rgba(0,0,0,.6)}
+.seg-note{font-size:.76rem;color:var(--faint);margin-bottom:12px;min-height:2.1em}
+.basis{display:flex;justify-content:space-between;align-items:center;font-size:.84rem;color:var(--muted);padding:10px 12px;border-radius:11px;background:var(--surface-2);border:1px solid var(--border);margin-bottom:12px}
+.basis b{color:var(--text)}
+.inline-switch{display:flex;align-items:center;gap:10px;font-size:.84rem;color:var(--muted);margin:12px 0 4px}
+.rent-out{margin-top:16px;padding:18px;border-radius:15px;background:linear-gradient(180deg,rgba(52,211,153,.1),rgba(52,211,153,.02));border:1px solid rgba(52,211,153,.22);transition:all .3s}
+.rent-out.empty{background:var(--surface-2);border-color:var(--border)}
+.rent-out.bad{background:linear-gradient(180deg,rgba(248,113,113,.1),rgba(248,113,113,.02));border-color:rgba(248,113,113,.3)}
+.days{display:flex;align-items:baseline;gap:8px}
+.days b{font-size:2.6rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.days span{color:var(--muted);font-weight:600}
+.rent-out.bad .days b{font-size:1.25rem;color:var(--danger);line-height:1.3}
+.rent-out.empty .days b{font-size:1rem;color:var(--muted);font-weight:500;line-height:1.4}
+.rent-sub{color:var(--muted);font-size:.84rem;margin-top:6px}
+.timeline{margin-top:14px}
+.timeline .bar{height:8px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.timeline .bar span{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#34d399,#0ea5e9);transition:width .6s var(--ease)}
+.timeline .ticks{display:flex;justify-content:space-between;font-size:.68rem;color:var(--faint);margin-top:5px}
+.rent-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.rent-stats div{font-size:.75rem;color:var(--muted)}
+.rent-stats b{display:block;color:var(--text);font-size:.92rem;font-weight:700}
+.reverse{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.reverse-out{font-size:.86rem;color:var(--muted);margin-top:8px;min-height:1.3em}
+.reverse-out b{color:var(--accent)}
+
+/* ---------- compare ---------- */
+.table-scroll{overflow-x:auto;margin:0 -6px;padding:0 6px}
+table.cmp{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem;min-width:720px}
+table.cmp th{text-align:right;font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:0 10px 10px;white-space:nowrap}
+table.cmp th:first-child,table.cmp td:first-child{text-align:left}
+table.cmp td{padding:11px 10px;text-align:right;border-top:1px solid var(--border);white-space:nowrap}
+table.cmp tbody tr{cursor:pointer;transition:background .15s}
+table.cmp tbody tr:hover{background:rgba(255,255,255,.025)}
+table.cmp tr.cur td{background:var(--accent-soft)}
+table.cmp tr.cur td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+table.cmp td b{font-weight:700}
+table.cmp td.dim{color:var(--faint)}
+
+/* ---------- mobile bar / toast / footer ---------- */
+.mbar{display:none}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;background:var(--surface-3);border:1px solid var(--border-strong);
+  padding:10px 16px;border-radius:12px;font-size:.88rem;font-weight:600;transition:all .3s var(--ease);pointer-events:none;z-index:50;box-shadow:0 20px 40px -12px rgba(0,0,0,.7)}
+.toast.show{transform:translate(-50%,0);opacity:1}
+footer{margin-top:34px;text-align:center;color:var(--faint);font-size:.8rem}
+footer a{color:var(--muted)}
+
+@media (max-width:1180px){
+  .picker{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (max-width:1040px){
+  .layout{grid-template-columns:1fr}
+  .side-col{position:static;max-height:none;overflow:visible}
+  .mbar{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:40;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;
+    background:rgba(19,22,31,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border-strong);box-shadow:0 20px 40px -12px rgba(0,0,0,.8)}
+  .mbar div{flex:1;min-width:0}
+  .mbar span{display:block;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .mbar b{font-size:1.05rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .mbar a{flex:none;padding:9px 14px;border-radius:11px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:.85rem;text-decoration:none}
+}
+@media (max-width:760px){
+  .wrap{padding:18px 16px 110px}
+  .card{padding:18px 16px}
+  .picker{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:2px 16px 6px;scrollbar-width:none}
+  .picker::-webkit-scrollbar{display:none}
+  .prop{flex:0 0 138px;scroll-snap-align:start}
+  .up-grid{grid-template-columns:1fr}
+  .mat{grid-template-columns:1fr 1fr;grid-template-areas:"name cost" "stock price"}
+  .mat-name{grid-area:name}.mat-cost{grid-area:cost}.mat .f-stock{grid-area:stock}.mat .f-price{grid-area:price}
+  .plot-input{width:100%}
+  .row .amt{min-width:0}
+  .grand{font-size:2rem}
+  .brand h1{font-size:1.2rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo"><svg class="i" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+      <div>
+        <h1>Property Calculator</h1>
+        <p>Every Cartel Empire property, upgrade and dock level — plus rent payback.</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn" id="shareBtn" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Copy link</button>
+      <button class="btn ghost" id="resetBtn" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>Reset</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main class="main-col">
+      <!-- Property picker -->
+      <section class="card">
+        <div class="card-head">
+          <h2><span class="ico" data-icon="house"></span>Choose a property</h2>
+        </div>
+        <div class="picker" id="picker" role="radiogroup" aria-label="Property type"></div>
+        <div class="prop-info" id="propInfo"></div>
+        <div class="caps" id="caps"></div>
+      </section>
+
+      <!-- Construction -->
+      <section class="card">
+        <div class="card-head">
+          <h2><span class="ico" data-icon="hammer"></span>Construction</h2>
+          <span class="spacer"></span>
+          <span class="badge" id="priceBadge" hidden>Enter material prices to include them</span>
+        </div>
+        <div class="rows">
+          <div class="row">
+            <label class="switch"><input type="checkbox" id="incPlot"><span class="track"></span></label>
+            <div class="lbl"><b>Plot</b><small id="plotHint">Turn off if you already own the plot</small></div>
+            <div class="input-wrap plot-input"><i>£</i><input class="in" data-bind="plot" inputmode="decimal" autocomplete="off" aria-label="Plot price"></div>
+            <div class="amt money" id="plotAmt">£0</div>
+          </div>
+          <div class="row">
+            <label class="switch"><input type="checkbox" id="incBuild"><span class="track"></span></label>
+            <div class="lbl"><b>Build cost</b><small id="buildHint">Cash paid at the Estate Agent</small></div>
+            <div class="amt money" id="buildAmt">£0</div>
+          </div>
+        </div>
+
+        <div class="mats-head">
+          <h3>Materials</h3>
+          <span class="hint">Prices are shared by every property and the dock. Shorthand works: 12.5k, 1.2m</span>
+          <span class="spacer" style="flex:1"></span>
+          <label class="inline-switch" style="margin:0"><span class="switch"><input type="checkbox" id="incMats"><span class="track"></span></span>Include building materials</label>
+        </div>
+        <div id="mats"></div>
+      </section>
+
+      <!-- Upgrades -->
+      <section class="card">
+        <div class="card-head">
+          <h2><span class="ico" data-icon="sparkle"></span>Upgrades</h2>
+          <span class="spacer"></span>
+          <button class="btn sm" id="maxAll" type="button">Max all</button>
+          <button class="btn sm ghost" id="clearAll" type="button">Clear</button>
+        </div>
+        <p class="hint" style="margin:-8px 0 14px">Tap a level to buy everything up to it. Set “Already own” to skip levels you have.</p>
+        <div class="up-grid" id="upGrid"></div>
+      </section>
+
+      <!-- Compare -->
+      <section class="card">
+        <div class="card-head">
+          <h2><span class="ico" data-icon="chart"></span>All properties at a glance</h2>
+          <span class="spacer"></span>
+          <span class="hint">Uses your material and plot prices</span>
+        </div>
+        <div class="table-scroll">
+          <table class="cmp">
+            <thead><tr><th>Property</th><th>Build time</th><th>Plot</th><th>Build + materials</th><th>All upgrades</th><th>Fully maxed</th><th>Upkeep / day</th></tr></thead>
+            <tbody id="cmpBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <aside class="side-col" id="summary">
+      <section class="card total-card">
+        <div class="eyebrow">Total cost</div>
+        <div class="grand money" id="grand">£0</div>
+        <div class="grand-sub" id="grandSub"></div>
+        <div class="stack" id="stack"></div>
+        <div class="legend" id="legend"></div>
+        <div class="stats">
+          <div class="stat"><span>Daily upkeep</span><b class="money" id="sUpkeep">£0</b></div>
+          <div class="stat"><span>Est. home value</span><b class="money" id="sHome">£0</b></div>
+          <div class="stat wide"><span>Full property cost (everything at market value)</span><b class="money" id="sFull">£0</b></div>
+        </div>
+        <p class="foot-note">Upkeep is 0.075% per day of 75% of the cash paid for plot, building and upgrades. Home value is that basis plus 75% of the market value of the materials in the building and dock.</p>
+      </section>
+
+      <section class="card" id="rent">
+        <div class="card-head" style="margin-bottom:12px">
+          <h2><span class="ico" data-icon="coins"></span>Rent payback</h2>
+        </div>
+        <label class="field"><span>Rent per day</span>
+          <div class="input-wrap"><i>£</i><input class="in" data-bind="rent" inputmode="decimal" autocomplete="off" placeholder="e.g. 2.5m"></div>
+        </label>
+        <div class="seg" id="basisSeg" role="tablist">
+          <button type="button" data-basis="full">Full property cost</button>
+          <button type="button" data-basis="spend">My spend</button>
+        </div>
+        <p class="seg-note" id="segNote"></p>
+        <div class="basis"><span>Paying back</span><b class="money" id="rBasis">£0</b></div>
+        <label class="inline-switch"><span class="switch"><input type="checkbox" id="subUpkeep"><span class="track"></span></span>Subtract daily upkeep from rent</label>
+
+        <div class="rent-out empty" id="rentOut">
+          <div class="days"><b id="rDays">Enter a daily rent to see how long it takes to pay off</b><span id="rUnit"></span></div>
+          <div class="rent-sub" id="rSub"></div>
+          <div class="timeline" id="rTimeline" hidden>
+            <div class="bar"><span id="rBar"></span></div>
+            <div class="ticks"><span>Today</span><span>6 mo</span><span>1 yr</span><span>2 yrs+</span></div>
+          </div>
+          <div class="rent-stats" id="rStats" hidden>
+            <div>Net per day<b class="money" id="rNet">£0</b></div>
+            <div>Paid off on<b id="rDate">—</b></div>
+            <div>Yearly return<b id="rRoi">—</b></div>
+            <div id="rAltWrap">Ignoring upkeep<b id="rAlt">—</b></div>
+          </div>
+        </div>
+
+        <div class="reverse">
+          <label class="field"><span>Want it paid off in…</span>
+            <div class="input-wrap"><input class="in" data-bind="targetDays" inputmode="numeric" autocomplete="off" placeholder="Number of days, e.g. 90"></div>
+          </label>
+          <div class="reverse-out" id="revOut"></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <footer>
+    <p>Private Property Calculator · Made for Cartel Empire by DAN</p>
+    <p style="margin-top:4px">Data from the Cartel Empire Wiki “Properties” page (last edited 10/07/2026). Plot prices other than the Private Estate and Luxury Secure Compound are yours to enter.</p>
+  </footer>
+</div>
+
+<div class="mbar" id="mbar">
+  <div><span>Total</span><b class="money" id="mTotal">£0</b></div>
+  <div><span>Payback</span><b id="mDays">—</b></div>
+  <a href="#summary">Details</a>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================= Data (Cartel Empire Wiki: Properties) ================= */
+const ICONS = {
+  house:'<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  hammer:'<path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"/><path d="m18 15 4-4"/><path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-1.13a6 6 0 0 0-2.648-.62H11.5l.92.82A6.18 6.18 0 0 1 14 10.86V13l2 2h2.172a2 2 0 0 1 1.414.586L21.5 17.5"/>',
+  sparkle:'<path d="M12 3l1.9 5.8L20 10.7l-5.8 1.9L12 18.5l-1.9-5.9L4 10.7l6.1-1.9z"/><path d="M19 17v4"/><path d="M17 19h4"/>',
+  chart:'<path d="M3 3v18h18"/><path d="M7 16v-5"/><path d="M12 16V8"/><path d="M17 16v-9"/>',
+  coins:'<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>',
+  vault:'<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="12" cy="12" r="3"/><path d="m7.5 7.5 2.4 2.4"/><path d="m16.5 7.5-2.4 2.4"/><path d="m7.5 16.5 2.4-2.4"/><path d="m16.5 16.5-2.4-2.4"/>',
+  gym:'<path d="M6.5 6.5v11"/><path d="M17.5 6.5v11"/><path d="M3 9.5v5"/><path d="M21 9.5v5"/><path d="M6.5 12h11"/>',
+  study:'<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+  museum:'<path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 20 7H4z"/>',
+  library:'<path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/>',
+  dock:'<path d="M12 22V8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/><circle cx="12" cy="5" r="3"/>',
+  lock:'<rect width="14" height="10" x="5" y="11" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  chevron:'<path d="m6 9 6 6 6-6"/>'
+};
+const icon = (k, cls = 'i') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
+
+const MATS = [
+  { key:'nails',    name:'Nails',    c:'#a5b4fc' },
+  { key:'bricks',   name:'Bricks',   c:'#fb923c' },
+  { key:'concrete', name:'Concrete', c:'#d6d3d1' },
+  { key:'steel',    name:'Steel',    c:'#60a5fa' }
+];
+
+// max order: safe, study, gym, museum, library, dock (as on the wiki)
+const P = (key, name, cost, n, b, c, s, time, days, mx, plot) => ({
+  key, name, cost, mats:{ nails:n, bricks:b, concrete:c, steel:s }, time, days,
+  max:{ safe:mx[0], study:mx[1], gym:mx[2], museum:mx[3], library:mx[4], dock:mx[5] }, plot
+});
+const PROPS = [
+  P('shack',    'Shack',                  10000,     0,     2,    0,   0, '6 hours', 0.25, [2,0,0,0,0,0]),
+  P('bungalow', 'Bungalow',               500000,    20,    5,    3,   1, '3 days',  3,    [2,2,2,1,0,0]),
+  P('townhouse','Town House',             4000000,   80,    45,   20,  8, '7 days',  7,    [3,3,3,2,3,0]),
+  P('villa',    'Villa',                  25000000,  200,   125,  40,  24,'14 days', 14,   [4,4,4,2,4,0]),
+  P('mansion',  'Mansion',                50000000,  800,   400,  250, 100,'21 days',21,   [6,5,5,3,5,0]),
+  P('estate',   'Private Estate',         125000000, 2000,  1200, 750, 300,'31 days',31,   [7,6,6,4,6,0], 50000000),
+  P('compound', 'Luxury Secure Compound', 375000000, 6000,  10000,2500,900,'62 days',62,   [8,7,8,5,7,5], 150000000)
+];
+const PROP = Object.fromEntries(PROPS.map(p => [p.key, p]));
+
+const CATS = [
+  { key:'safe', name:'Safe', icon:'vault', c:'#fbbf24', desc:'Stores cash privately with no bank deposit tax', levels:[
+    { n:'Small Safe',     c:500000,    b:'Holds £10,000,000' },
+    { n:'Medium Safe',    c:2500000,   b:'Holds £50,000,000' },
+    { n:'Large Safe',     c:7500000,   b:'Holds £150,000,000' },
+    { n:'Small Vault',    c:15000000,  b:'Holds £250,000,000' },
+    { n:'Medium Vault',   c:30000000,  b:'Holds £500,000,000' },
+    { n:'Large Vault',    c:150000000, b:'Holds £2,000,000,000' },
+    { n:'Massive Vault',  c:350000000, b:'Holds £5,000,000,000' },
+    { n:'Compound Vault', c:750000000, b:'Holds £10,000,000,000' }
+  ]},
+  { key:'gym', name:'Home Gym', icon:'gym', c:'#fb7185', desc:'Increases all Gym gains', levels:[
+    { n:'Barbell Set',           c:10000,     b:'+0.05% gym gains' },
+    { n:'Heavy Weights Set',     c:50000,     b:'+0.1% gym gains' },
+    { n:'Gym Machine Set',       c:1000000,   b:'+0.2% gym gains' },
+    { n:'Basic Gym Room',        c:3000000,   b:'+0.3% gym gains' },
+    { n:'Superior Gym Room',     c:15000000,  b:'+0.5% gym gains' },
+    { n:'Professional Gym Room', c:50000000,  b:'+0.75% gym gains' },
+    { n:'Elite Gym Room',        c:150000000, b:'+1.25% gym gains' },
+    { n:'Compound Gym Complex',  c:250000000, b:'+1.50% gym gains' }
+  ]},
+  { key:'study', name:'Home Study', icon:'study', c:'#38bdf8', desc:'Shortens University course times', levels:[
+    { n:'Basic Study Books',       c:25000,     b:'−1% course time' },
+    { n:'Advanced Study Books',    c:250000,    b:'−2% course time' },
+    { n:'Home Computer',           c:1500000,   b:'−4% course time' },
+    { n:'Basic Home Study',        c:5000000,   b:'−6% course time' },
+    { n:'Superior Home Study',     c:12500000,  b:'−8% course time' },
+    { n:'Professional Home Study', c:25000000,  b:'−10% course time' },
+    { n:'Compound Study Suite',    c:100000000, b:'−12% course time' }
+  ]},
+  { key:'museum', name:'Museum', icon:'museum', c:'#a78bfa', desc:'Raises the Intelligence cap above 1,000', levels:[
+    { n:'Small Artifact Display', c:1000000,   b:'Int cap 1,050 (+50)' },
+    { n:'Large Artifact Display', c:10000000,  b:'Int cap 1,100 (+100)' },
+    { n:'Basic Museum Room',      c:25000000,  b:'Int cap 1,150 (+150)' },
+    { n:'Superior Museum Room',   c:50000000,  b:'Int cap 1,200 (+200)' },
+    { n:'Compound Museum Wing',   c:150000000, b:'Int cap 1,250 (+250)' }
+  ]},
+  { key:'library', name:'Library', icon:'library', c:'#f59e0b', desc:'Increases Intelligence gains while studying', levels:[
+    { n:'Small Book Collection',     c:10000,    b:'+0.1% int gains' },
+    { n:'Medium Book Collection',    c:250000,   b:'+0.2% int gains' },
+    { n:'Large Book Collection',     c:1250000,  b:'+0.3% int gains' },
+    { n:'Basic Library Room',        c:7500000,  b:'+0.4% int gains' },
+    { n:'Superior Library Room',     c:12500000, b:'+0.5% int gains' },
+    { n:'Professional Library Room', c:30000000, b:'+0.75% int gains' },
+    { n:'Compound Library Wing',     c:90000000, b:'+1.00% int gains' }
+  ]},
+  { key:'dock', name:'Dock', icon:'dock', c:'#22d3ee', desc:'Costs cash and materials · Luxury Secure Compound only', levels:[
+    { n:'Jetski',           c:40000000,  m:{nails:25,  bricks:50,  concrete:15,  steel:5},  b:'+5 town shop buys/day (30)' },
+    { n:'Tugboat',          c:70000000,  m:{nails:75,  bricks:125, concrete:40,  steel:15}, b:'+10 town shop buys/day (35)' },
+    { n:'Catamaran',        c:80000000,  m:{nails:150, bricks:250, concrete:80,  steel:30}, b:'+15 town shop buys/day (40)' },
+    { n:'Yacht',            c:275000000, m:{nails:350, bricks:550, concrete:175, steel:60}, b:'4th expedition slot, keeps +15 buys' },
+    { n:"Smuggler's Berth", c:350000000, m:{nails:400, bricks:650, concrete:200, steel:80}, b:'Unlocks personal smuggling, keeps the rest' }
+  ]}
+];
+const CAT = Object.fromEntries(CATS.map(c => [c.key, c]));
+
+const UPKEEP_RATE = 0.00075;   // per day
+const BASIS_RATE  = 0.75;      // share of cash paid
+const HOME_MAT_RATE = 0.75;    // share of material market value
+
+/* ================= Formatting ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const fmt   = v => '£' + Math.round(v).toLocaleString('en-GB');
+const fmtN  = v => Math.round(v).toLocaleString('en-GB');
+const fmtIn = v => v.toLocaleString('en-GB', { maximumFractionDigits: 2 });
+const trimNum = x => String(Math.round(x * 100) / 100);
+function fmtShort(v) {
+  const a = Math.abs(v);
+  if (a >= 1e9) return '£' + trimNum(v / 1e9) + 'B';
+  if (a >= 1e6) return '£' + trimNum(v / 1e6) + 'M';
+  if (a >= 1e3) return '£' + trimNum(v / 1e3) + 'K';
+  return '£' + Math.round(v);
+}
+function parseNum(s) {
+  s = String(s ?? '').trim().toLowerCase().replace(/[£,\s_]/g, '');
+  if (!s) return 0;
+  const m = s.match(/^(\d*\.?\d+)(k|m|b|bn)?$/);
+  if (!m) return NaN;
+  return parseFloat(m[1]) * ({ k:1e3, m:1e6, b:1e9, bn:1e9 }[m[2]] || 1);
+}
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function tween(el, to, f = fmt) {
+  const from = el._v ?? 0;
+  el._v = to;
+  cancelAnimationFrame(el._raf);
+  if (reduceMotion || from === to || !isFinite(from)) { el.textContent = f(to); return; }
+  const t0 = performance.now(), d = 420;
+  const step = t => {
+    const p = Math.min(1, (t - t0) / d), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = f(from + (to - from) * e);
+    if (p < 1) el._raf = requestAnimationFrame(step);
+  };
+  el._raf = requestAnimationFrame(step);
+}
+
+/* ================= State ================= */
+const STORE_KEY = 'ce-property-calc-v1';
+const zeroMats = () => ({ nails:0, bricks:0, concrete:0, steel:0 });
+function defaultState() {
+  return {
+    prop:'estate', prices:zeroMats(), stock:zeroMats(), plots:{},
+    incPlot:true, incBuild:true, incMats:true,
+    levels:{}, rent:0, targetDays:0, rentBasis:'full', subUpkeep:true
+  };
+}
+function sanitize(s) {
+  const d = defaultState();
+  if (!s || typeof s !== 'object') return d;
+  const out = { ...d, ...s };
+  if (!PROP[out.prop]) out.prop = d.prop;
+  for (const k of ['prices','stock']) {
+    out[k] = zeroMats();
+    for (const m of MATS) { const v = Number(s[k]?.[m.key]); out[k][m.key] = isFinite(v) && v > 0 ? v : 0; }
+  }
+  out.plots = {};
+  for (const p of PROPS) { const v = Number(s.plots?.[p.key]); if (s.plots && p.key in s.plots && isFinite(v) && v >= 0) out.plots[p.key] = v; }
+  out.levels = (s.levels && typeof s.levels === 'object') ? s.levels : {};
+  for (const k of ['rent','targetDays']) { const v = Number(out[k]); out[k] = isFinite(v) && v > 0 ? v : 0; }
+  out.rentBasis = out.rentBasis === 'spend' ? 'spend' : 'full';
+  for (const k of ['incPlot','incBuild','incMats','subUpkeep']) out[k] = out[k] !== false;
+  return out;
+}
+function loadState() {
+  try {
+    const h = location.hash.match(/^#s=(.+)$/);
+    if (h) return sanitize(JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(h[1]))))));
+  } catch (e) {}
+  try { return sanitize(JSON.parse(localStorage.getItem(STORE_KEY))); } catch (e) { return defaultState(); }
+}
+let state = loadState();
+let saveT;
+function save() {
+  clearTimeout(saveT);
+  saveT = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }, 150);
+}
+
+function getLv(pk) {
+  const p = PROP[pk];
+  const lv = state.levels[pk] = state.levels[pk] || {};
+  for (const c of CATS) {
+    const max = p.max[c.key];
+    const cur = lv[c.key] || {};
+    const h = Math.min(Math.max(0, cur.h | 0), max);
+    const t = Math.min(Math.max(h, cur.t | 0), max);
+    lv[c.key] = { h, t };
+  }
+  return lv;
+}
+const plotPriceOf = pk => (pk in state.plots ? state.plots[pk] : (PROP[pk].plot ?? 0));
+
+/* ================= Maths ================= */
+function calc(pk, lvOverride) {
+  const p = PROP[pk], lv = lvOverride || getLv(pk), pr = state.prices;
+  const dockNew = zeroMats(), dockAll = zeroMats();
+  const perCat = {};
+  let upCash = 0, dockCash = 0, allUpCash = 0;
+  for (const c of CATS) {
+    const { h, t } = lv[c.key];
+    let cost = 0;
+    c.levels.forEach((L, i) => {
+      const n = i + 1;
+      if (n > t) return;
+      allUpCash += L.c;
+      if (L.m) for (const m of MATS) dockAll[m.key] += L.m[m.key];
+      if (n > h) { cost += L.c; if (L.m) for (const m of MATS) dockNew[m.key] += L.m[m.key]; }
+    });
+    perCat[c.key] = cost;
+    if (c.key === 'dock') dockCash += cost; else upCash += cost;
+  }
+  const mats = {};
+  let matCost = 0, missingPrice = false;
+  for (const m of MATS) {
+    const building = state.incMats ? p.mats[m.key] : 0;
+    const need = building + dockNew[m.key];
+    const buy = Math.max(0, need - state.stock[m.key]);
+    const cost = buy * pr[m.key];
+    if (buy > 0 && !(pr[m.key] > 0)) missingPrice = true;
+    mats[m.key] = { building, dock: dockNew[m.key], need, buy, cost };
+    matCost += cost;
+  }
+  const plotPrice = plotPriceOf(pk);
+  const plotCost = state.incPlot ? plotPrice : 0;
+  const buildCash = state.incBuild ? p.cost : 0;
+  const total = plotCost + buildCash + matCost + upCash + dockCash;
+
+  const cashBasis = plotPrice + p.cost + allUpCash;
+  let allMatValue = 0;
+  for (const m of MATS) allMatValue += (p.mats[m.key] + dockAll[m.key]) * pr[m.key];
+  const upkeep = cashBasis * BASIS_RATE * UPKEEP_RATE;
+  const homeValue = cashBasis * BASIS_RATE + allMatValue * HOME_MAT_RATE;
+  const fullCost = cashBasis + allMatValue;
+  return { plotPrice, plotCost, buildCash, matCost, upCash, dockCash, total, perCat, mats,
+           missingPrice, upkeep, homeValue, fullCost, cashBasis };
+}
+function maxedLevels(pk) {
+  const p = PROP[pk];
+  return Object.fromEntries(CATS.map(c => [c.key, { h:0, t:p.max[c.key] }]));
+}
+
+/* ================= Render: static pieces ================= */
+document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon); });
+
+function renderPicker() {
+  $('#picker').innerHTML = PROPS.map((p, i) => `
+    <button type="button" class="prop" role="radio" data-prop="${p.key}" aria-checked="false">
+      <span class="tier">${PROPS.map((_, j) => `<i class="${j <= i ? 'on' : ''}"></i>`).join('')}</span>
+      <b>${p.name}</b>
+      <span class="pc">${fmtShort(p.cost)}</span>
+      <span>${p.time}</span>
+    </button>`).join('');
+}
+
+function renderMats() {
+  $('#mats').innerHTML = MATS.map(m => `
+    <div class="mat" data-mat="${m.key}" style="--c:${m.c}">
+      <div class="mat-name"><span class="dot"></span><div><b>${m.name}</b><small class="need"></small></div></div>
+      <label class="field f-stock"><span>Already have</span><input class="in" data-bind="stock.${m.key}" inputmode="numeric" autocomplete="off" placeholder="0"></label>
+      <label class="field f-price"><span>Market price each</span><div class="input-wrap"><i>£</i><input class="in" data-bind="prices.${m.key}" inputmode="decimal" autocomplete="off" placeholder="0"></div></label>
+      <div class="mat-cost"><b class="money">£0</b><small></small></div>
+    </div>`).join('');
+}
+
+function firstPropFor(cat, n) {
+  return PROPS.find(p => p.max[cat] >= n);
+}
+
+const openCats = new Set();
+function renderUpgrades() {
+  const p = PROP[state.prop];
+  $('#upGrid').innerHTML = CATS.map(c => {
+    const max = p.max[c.key];
+    const pills = [`<button type="button" class="pill zero" data-lv="0" title="Buy no new levels">None</button>`]
+      .concat(c.levels.map((L, i) => {
+        const n = i + 1;
+        if (n > max) {
+          const need = firstPropFor(c.key, n);
+          return `<button type="button" class="pill" data-lv="${n}" disabled title="${L.n} — needs ${need ? need.name : 'a bigger property'}">${icon('lock')}${n}</button>`;
+        }
+        return `<button type="button" class="pill" data-lv="${n}" title="${L.n} · ${fmt(L.c)}">${n}</button>`;
+      })).join('');
+    const own = Array.from({ length: max + 1 }, (_, n) =>
+      `<option value="${n}">${n === 0 ? 'Nothing' : `Lv ${n} · ${c.levels[n - 1].n}`}</option>`).join('');
+    const rows = c.levels.map((L, i) => {
+      const n = i + 1;
+      const mats = L.m ? `<span class="dock-mats">${MATS.map(m => `<span>${fmtN(L.m[m.key])} ${m.name.toLowerCase()}</span>`).join('')}</span>` : '';
+      return `<tr data-lv="${n}" class="${n > max ? 'locked' : ''}">
+        <td class="lvn">${n}</td>
+        <td>${L.n}<span class="lvb">${L.b}</span>${mats}</td>
+        <td class="lvc">${fmt(L.c)}</td></tr>`;
+    }).join('');
+    const naNote = c.key === 'dock'
+      ? 'Only the Luxury Secure Compound has a Dock.'
+      : `Not available on a ${p.name}. Needs a ${firstPropFor(c.key, 1)?.name ?? 'bigger property'} or better.`;
+    return `
+      <div class="up ${openCats.has(c.key) ? 'open' : ''}" data-cat="${c.key}" style="--c:${c.c}">
+        <div class="up-head">
+          <div class="up-ico">${icon(c.icon)}</div>
+          <div class="up-title"><h3>${c.name}</h3><p>${c.desc}</p></div>
+          <div class="up-cost"><span class="money cat-cost">£0</span><small class="cat-max">max Lv ${max}</small></div>
+        </div>
+        <div class="pills" role="group" aria-label="${c.name} target level">${pills}</div>
+        <div class="readout"></div>
+        <div class="na-note">${naNote}</div>
+        <div class="up-foot">
+          <label class="own-sel">Already own <select data-own="${c.key}">${own}</select></label>
+          <button type="button" class="toggle-levels" aria-expanded="${openCats.has(c.key)}">All levels ${icon('chevron')}</button>
+        </div>
+        <div class="levels"><div><table class="lv-table"><tbody>${rows}</tbody></table></div></div>
+      </div>`;
+  }).join('');
+}
+
+function renderProperty() {
+  const p = PROP[state.prop];
+  document.querySelectorAll('.prop').forEach(b => {
+    const on = b.dataset.prop === p.key;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-checked', on);
+  });
+  const plot = plotPriceOf(p.key);
+  $('#propInfo').innerHTML = `
+    <span>Build time <b>${p.time}</b></span>
+    <span>Build cost <b>${fmt(p.cost)}</b></span>
+    <span>Materials <b>${MATS.map(m => `${fmtN(p.mats[m.key])} ${m.name.toLowerCase()}`).join(' · ')}</b></span>`;
+  $('#caps').innerHTML = CATS.map(c => {
+    const mx = p.max[c.key];
+    return `<span class="cap ${mx ? '' : 'na'}" style="--c:${c.c}">${icon(c.icon)}${c.name} <b>${mx ? 'Lv ' + mx : '—'}</b></span>`;
+  }).join('');
+  $('#plotHint').textContent = p.key === 'compound'
+    ? 'Luxury Secure Compound plot · off if you own it'
+    : (p.plot ? 'Turn off if you already own the plot' : 'Plot price not on the wiki — enter what you pay');
+  renderUpgrades();
+  fillInput($('[data-bind="plot"]'));
+}
+
+/* ================= Render: dynamic values ================= */
+function update() {
+  const p = PROP[state.prop];
+  const lv = getLv(p.key);
+  const r = calc(p.key);
+
+  // Construction
+  $('#incPlot').checked = state.incPlot;
+  $('#incBuild').checked = state.incBuild;
+  $('#incMats').checked = state.incMats;
+  const plotAmt = $('#plotAmt');
+  plotAmt.textContent = fmt(r.plotPrice);
+  plotAmt.classList.toggle('off', !state.incPlot);
+  const buildAmt = $('#buildAmt');
+  buildAmt.textContent = fmt(p.cost);
+  buildAmt.classList.toggle('off', !state.incBuild);
+  $('#priceBadge').hidden = !r.missingPrice;
+
+  for (const m of MATS) {
+    const row = $(`.mat[data-mat="${m.key}"]`);
+    const d = r.mats[m.key];
+    const parts = [];
+    if (d.building) parts.push(`${fmtN(d.building)} building`);
+    if (d.dock) parts.push(`${fmtN(d.dock)} dock`);
+    $('.need', row).textContent = d.need ? `${fmtN(d.need)} needed${parts.length > 1 ? ' (' + parts.join(' + ') + ')' : ''}` : 'None needed';
+    $('.mat-cost b', row).textContent = fmt(d.cost);
+    const sm = $('.mat-cost small', row);
+    if (!d.need) { sm.textContent = '—'; sm.className = ''; }
+    else if (!d.buy) { sm.textContent = 'Covered by stock'; sm.className = 'ok'; }
+    else { sm.textContent = `Buy ${fmtN(d.buy)}`; sm.className = ''; }
+  }
+
+  // Upgrades
+  for (const c of CATS) {
+    const card = $(`.up[data-cat="${c.key}"]`);
+    if (!card) continue;
+    const max = p.max[c.key];
+    const { h, t } = lv[c.key];
+    card.classList.toggle('na', max === 0);
+    card.classList.toggle('has-sel', t > h);
+    card.querySelectorAll('.pill').forEach(b => {
+      const n = +b.dataset.lv;
+      if (n === 0) { b.classList.toggle('on', t === h); return; }
+      b.classList.toggle('is-own', n <= h);
+      b.classList.toggle('is-sel', n > h && n <= t);
+      b.classList.toggle('is-target', n === t && t > h);
+      b.setAttribute('aria-pressed', n > h && n <= t);
+    });
+    card.querySelectorAll('tbody tr').forEach(tr => {
+      const n = +tr.dataset.lv;
+      tr.classList.toggle('own', n <= h);
+      tr.classList.toggle('sel', n > h && n <= t);
+    });
+    $('.cat-cost', card).textContent = r.perCat[c.key] ? fmt(r.perCat[c.key]) : '£0';
+    $('select', card).value = String(h);
+    const top = Math.max(t, h);
+    const ro = $('.readout', card);
+    if (top === 0) ro.innerHTML = 'Nothing selected';
+    else {
+      const L = c.levels[top - 1];
+      const buying = t > h ? `Buying Lv ${h + 1}${t > h + 1 ? '–' + t : ''}` : 'Nothing new to buy';
+      ro.innerHTML = `<b>Lv ${top} · ${L.n}</b> — <span class="ben">${L.b}</span><br>${buying}`;
+    }
+  }
+
+  // Summary
+  tween($('#grand'), r.total);
+  $('#grandSub').textContent = `${p.name} · ${p.time} to build`;
+  const segs = [
+    { k:'Plot',      v:r.plotCost,  c:'#94a3b8' },
+    { k:'Building',  v:r.buildCash, c:'#34d399' },
+    { k:'Materials', v:r.matCost,   c:'#fb923c' },
+    { k:'Upgrades',  v:r.upCash,    c:'#a78bfa' },
+    { k:'Dock',      v:r.dockCash,  c:'#22d3ee' }
+  ].filter(s => s.k !== 'Dock' || p.max.dock);
+  const stack = $('#stack');
+  if (stack.children.length !== segs.length) stack.innerHTML = segs.map(s => `<span style="--c:${s.c}" title="${s.k}"></span>`).join('');
+  segs.forEach((s, i) => { stack.children[i].style.flexGrow = r.total ? s.v / r.total : 0; });
+  $('#legend').innerHTML = segs.map(s => `
+    <div class="${s.v ? '' : 'zero'}" style="--c:${s.c}"><i></i><span>${s.k}</span><b class="money">${fmt(s.v)}</b>
+    <small style="color:var(--faint);min-width:40px;text-align:right">${r.total ? Math.round(s.v / r.total * 100) : 0}%</small></div>`).join('');
+  tween($('#sUpkeep'), r.upkeep);
+  tween($('#sHome'), r.homeValue);
+  tween($('#sFull'), r.fullCost);
+
+  // Rent
+  updateRent(r);
+
+  // Compare
+  $('#cmpBody').innerHTML = PROPS.map(q => {
+    const plot = plotPriceOf(q.key);
+    let matVal = 0;
+    for (const m of MATS) matVal += q.mats[m.key] * state.prices[m.key];
+    const maxed = calc(q.key, maxedLevels(q.key));
+    const upAll = maxed.fullCost - plot - q.cost - matVal;
+    return `<tr data-prop="${q.key}" class="${q.key === p.key ? 'cur' : ''}">
+      <td><b>${q.name}</b></td>
+      <td>${q.time}</td>
+      <td class="${plot ? '' : 'dim'}">${plot ? fmtShort(plot) : 'not set'}</td>
+      <td>${fmtShort(q.cost + matVal)}</td>
+      <td>${upAll ? fmtShort(upAll) : '—'}</td>
+      <td><b>${fmtShort(maxed.fullCost)}</b></td>
+      <td>${fmtShort(maxed.upkeep)}</td></tr>`;
+  }).join('');
+
+  $('#mTotal').textContent = fmt(r.total);
+  save();
+}
+
+function updateRent(r) {
+  document.querySelectorAll('#basisSeg button').forEach(b => {
+    const on = b.dataset.basis === state.rentBasis;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on);
+  });
+  $('#segNote').textContent = state.rentBasis === 'full'
+    ? 'Everything in this setup at market value, including the plot, levels and materials you already own.'
+    : 'Only what you are paying now — the Total cost above.';
+  $('#subUpkeep').checked = state.subUpkeep;
+
+  const basis = state.rentBasis === 'full' ? r.fullCost : r.total;
+  tween($('#rBasis'), basis);
+  const rent = state.rent;
+  const upkeep = state.subUpkeep ? r.upkeep : 0;
+  const net = rent - upkeep;
+  const out = $('#rentOut');
+  const daysEl = $('#rDays'), unit = $('#rUnit'), sub = $('#rSub');
+  const tl = $('#rTimeline'), stats = $('#rStats');
+  out.classList.remove('empty', 'bad');
+  let mobile = '—';
+
+  if (!rent) {
+    out.classList.add('empty');
+    daysEl.textContent = 'Enter a daily rent to see how long it takes to pay off';
+    unit.textContent = ''; sub.textContent = ''; tl.hidden = true; stats.hidden = true;
+  } else if (!basis) {
+    out.classList.add('empty');
+    daysEl.textContent = 'Nothing to pay back — the cost is £0';
+    unit.textContent = ''; sub.textContent = ''; tl.hidden = true; stats.hidden = true;
+  } else if (net <= 0) {
+    out.classList.add('bad');
+    daysEl.textContent = 'Never — rent doesn’t cover upkeep';
+    unit.textContent = '';
+    sub.textContent = `Upkeep is ${fmt(upkeep)}/day, so you need more than that in rent before anything goes toward the cost.`;
+    tl.hidden = true; stats.hidden = true;
+    mobile = 'Never';
+  } else {
+    const exact = basis / net;
+    const days = Math.ceil(exact);
+    daysEl.textContent = fmtN(days);
+    unit.textContent = days === 1 ? 'day' : 'days';
+    const weeks = exact / 7, months = exact / 30.44, years = exact / 365.25;
+    sub.textContent = years >= 1
+      ? `≈ ${trimNum(years)} years · ${fmtN(months)} months`
+      : `≈ ${trimNum(weeks)} weeks · ${trimNum(months)} months`;
+    tl.hidden = false; stats.hidden = false;
+    // timeline: piecewise so 6mo sits at 1/3, 1yr at 2/3, 2yrs at end
+    const pos = exact <= 182.6 ? exact / 182.6 / 3 : exact <= 365.25 ? 1/3 + (exact - 182.6) / 182.65 / 3 : 2/3 + Math.min(1, (exact - 365.25) / 365.25) / 3;
+    $('#rBar').style.width = (Math.min(1, pos) * 100).toFixed(1) + '%';
+    tween($('#rNet'), net);
+    const d = new Date(); d.setDate(d.getDate() + days);
+    $('#rDate').textContent = d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+    $('#rRoi').textContent = (net * 365 / basis * 100).toFixed(1) + '%';
+    const alt = $('#rAltWrap');
+    if (state.subUpkeep && upkeep) {
+      alt.hidden = false;
+      alt.firstChild.textContent = 'Ignoring upkeep';
+      $('#rAlt').textContent = fmtN(Math.ceil(basis / rent)) + ' days';
+    } else {
+      alt.hidden = false;
+      alt.firstChild.textContent = 'With upkeep';
+      $('#rAlt').textContent = rent > r.upkeep ? fmtN(Math.ceil(basis / (rent - r.upkeep))) + ' days' : 'Never';
+    }
+    mobile = fmtN(days) + (days === 1 ? ' day' : ' days');
+  }
+  $('#mDays').textContent = mobile;
+
+  // Reverse calculation
+  const rev = $('#revOut');
+  const td = Math.floor(state.targetDays);
+  if (!td) rev.innerHTML = 'Enter a number of days to see the rent you’d need to charge.';
+  else if (!basis) rev.textContent = 'Nothing to pay back.';
+  else rev.innerHTML = `Charge at least <b>${fmt(Math.ceil(basis / td + upkeep))}</b> per day${upkeep ? ` (includes ${fmt(upkeep)} upkeep)` : ''}.`;
+}
+
+/* ================= Inputs ================= */
+function getBind(path) {
+  if (path === 'plot') return plotPriceOf(state.prop);
+  const [a, b] = path.split('.');
+  return b ? state[a][b] : state[a];
+}
+function setBind(path, v, empty) {
+  if (path === 'plot') {
+    if (empty) delete state.plots[state.prop]; else state.plots[state.prop] = v;
+    return;
+  }
+  const [a, b] = path.split('.');
+  if (b) state[a][b] = v; else state[a] = v;
+}
+function fillInput(el) {
+  if (!el) return;
+  const v = getBind(el.dataset.bind);
+  el.value = v ? fmtIn(v) : '';
+  el.classList.remove('invalid');
+}
+function fillAll() { document.querySelectorAll('[data-bind]').forEach(fillInput); }
+
+document.addEventListener('input', e => {
+  const el = e.target.closest && e.target.closest('[data-bind]');
+  if (!el) return;
+  const raw = el.value.trim();
+  const v = parseNum(raw);
+  const bad = Number.isNaN(v) || v < 0;
+  el.classList.toggle('invalid', bad);
+  setBind(el.dataset.bind, bad ? 0 : v, raw === '');
+  update();
+});
+document.addEventListener('focusout', e => {
+  const el = e.target.closest && e.target.closest('[data-bind]');
+  if (el && !el.classList.contains('invalid')) fillInput(el);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.matches && e.target.matches('[data-bind]')) e.target.blur();
+});
+
+$('#picker').addEventListener('click', e => {
+  const b = e.target.closest('.prop');
+  if (!b) return;
+  selectProperty(b.dataset.prop);
+});
+$('#picker').addEventListener('keydown', e => {
+  if (!['ArrowLeft','ArrowRight'].includes(e.key)) return;
+  const i = PROPS.findIndex(p => p.key === state.prop);
+  const n = Math.min(PROPS.length - 1, Math.max(0, i + (e.key === 'ArrowRight' ? 1 : -1)));
+  selectProperty(PROPS[n].key);
+  $(`.prop[data-prop="${PROPS[n].key}"]`).focus();
+  e.preventDefault();
+});
+function selectProperty(k) {
+  if (!PROP[k] || k === state.prop) return;
+  state.prop = k;
+  renderProperty();
+  update();
+  const b = $(`.prop[data-prop="${k}"]`);
+  b && b.scrollIntoView({ block:'nearest', inline:'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+}
+
+['incPlot','incBuild','incMats','subUpkeep'].forEach(id => {
+  $('#' + id).addEventListener('change', e => { state[id] = e.target.checked; update(); });
+});
+
+$('#upGrid').addEventListener('click', e => {
+  const card = e.target.closest('.up');
+  if (!card) return;
+  const cat = card.dataset.cat;
+  const tog = e.target.closest('.toggle-levels');
+  if (tog) {
+    const open = card.classList.toggle('open');
+    tog.setAttribute('aria-expanded', open);
+    open ? openCats.add(cat) : openCats.delete(cat);
+    return;
+  }
+  const hit = e.target.closest('.pill, tr[data-lv]');
+  if (!hit || hit.disabled || hit.classList.contains('locked')) return;
+  const n = +hit.dataset.lv;
+  const lv = getLv(state.prop)[cat];
+  lv.t = n === 0 ? lv.h : Math.max(n, lv.h);
+  update();
+});
+$('#upGrid').addEventListener('change', e => {
+  const sel = e.target.closest('select[data-own]');
+  if (!sel) return;
+  const lv = getLv(state.prop)[sel.dataset.own];
+  lv.h = +sel.value;
+  if (lv.t < lv.h) lv.t = lv.h;
+  update();
+});
+$('#maxAll').addEventListener('click', () => {
+  const p = PROP[state.prop], lv = getLv(p.key);
+  for (const c of CATS) lv[c.key].t = p.max[c.key];
+  update();
+});
+$('#clearAll').addEventListener('click', () => {
+  const lv = getLv(state.prop);
+  for (const c of CATS) lv[c.key].t = lv[c.key].h;
+  update();
+});
+
+$('#basisSeg').addEventListener('click', e => {
+  const b = e.target.closest('button[data-basis]');
+  if (!b) return;
+  state.rentBasis = b.dataset.basis;
+  update();
+});
+
+$('#cmpBody').addEventListener('click', e => {
+  const tr = e.target.closest('tr[data-prop]');
+  if (!tr) return;
+  selectProperty(tr.dataset.prop);
+  window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+});
+
+let toastT;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+$('#shareBtn').addEventListener('click', async () => {
+  const enc = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(state)))));
+  const url = location.href.split('#')[0] + '#s=' + enc;
+  history.replaceState(null, '', '#s=' + enc);
+  try { await navigator.clipboard.writeText(url); toast('Link copied — it opens with this exact setup'); }
+  catch (e) { toast('Link is in the address bar — copy it from there'); }
+});
+$('#resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset all prices, levels and rent back to defaults?')) return;
+  state = defaultState();
+  openCats.clear();
+  history.replaceState(null, '', location.pathname + location.search);
+  renderProperty();
+  fillAll();
+  update();
+  toast('Calculator reset');
+});
+
+/* ================= Boot ================= */
+renderPicker();
+renderMats();
+renderProperty();
+fillAll();
+update();
+})();
+</script>
+</body>
+</html>
